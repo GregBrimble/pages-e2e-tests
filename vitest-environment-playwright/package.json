@@ -1,0 +1,8 @@
+{
+	"name": "vitest-environment-playwright",
+	"private": true,
+	"main": "index.ts",
+	"dependencies": {
+		"playwright": "^1.31.2"
+	}
+}
