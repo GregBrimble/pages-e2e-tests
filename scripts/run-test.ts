@@ -1,4 +1,8 @@
+import { existsSync } from "fs";
 import { readdir } from "fs/promises";
+import { join } from "path";
+import { z } from "zod";
+import { argumentParser } from "zodcli";
 import { Environment, FIXTURES_PATH, Trigger } from "./src/config";
 import { createDeployment } from "./src/createDeployment";
 import { Logger, LogLevel } from "./src/logger";
@@ -11,15 +15,59 @@ import { uploadTestResults } from "./src/uploadTestResults";
 const ENVIRONMENT = Environment.Production;
 const TRIGGER = Trigger.GitHub;
 
-const logger = new Logger({ level: LogLevel.log });
-const teardownService = new TeardownService({ logger });
+let teardownService: TeardownService | undefined = undefined;
 
 const main = async () => {
 	const startTimestamp = Date.now();
 
+	const { logLevel, fixturesInclude, fixturesExclude } = argumentParser({
+		options: z
+			.object({
+				logLevel: z
+					.union([
+						z.literal("debug").transform(() => LogLevel.debug),
+						z.literal("info").transform(() => LogLevel.info),
+						z.literal("log").transform(() => LogLevel.log),
+						z.literal("warn").transform(() => LogLevel.warn),
+						z.literal("error").transform(() => LogLevel.error),
+					])
+					.default("log"),
+				fixturesInclude: z
+					.array(
+						z
+							.string()
+							.refine((value) => value.match(/^(?:\w+(?:-\w+)*|\*)$/))
+							.refine(
+								(value) =>
+									value === "*" || existsSync(join(FIXTURES_PATH, value))
+							)
+					)
+					.default(["*"]),
+				fixturesExclude: z
+					.array(
+						z
+							.string()
+							.refine((value) => value.match(/^(?:\w+(?:-\w+)*|\*)$/))
+							.refine((value) => existsSync(join(FIXTURES_PATH, value)))
+					)
+					.default([]),
+			})
+			.strict(),
+	}).parse(process.argv.slice(2));
+
+	const logger = new Logger({ level: logLevel });
+	teardownService = new TeardownService({ logger });
+
 	const fixtures = (await readdir(FIXTURES_PATH, { withFileTypes: true }))
 		.filter((dirent) => dirent.isDirectory())
-		.map(({ name }) => name);
+		.map(({ name }) => name)
+		.filter((name) => {
+			if (fixturesInclude.includes("*") && !fixturesExclude.includes(name)) {
+				return true;
+			}
+
+			return fixturesInclude.includes(name) && !fixturesExclude.includes(name);
+		});
 
 	logger.log(
 		`Welcome to the Pages e2e test runner!
@@ -69,4 +117,4 @@ This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger
 	});
 };
 
-main().finally(() => teardownService.teardown());
+main().finally(() => teardownService?.teardown());
