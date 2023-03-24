@@ -1,3 +1,5 @@
+/// <reference types="../setup-types" />
+
 import { cp } from "fs/promises";
 import { join } from "path";
 
