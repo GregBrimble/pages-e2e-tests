@@ -59,6 +59,10 @@ export const TEST_EXCLUDE = defaultExclude;
 export const TEST_RESULTS_BRANCH_NAME = "test-results";
 export const TEST_RESULTS_PATH = join(DIRNAME, "dist");
 
+export const MUTEX_TIMEOUT = 10 * ONE_MINUTE;
+export const MUTEX_CONSIDERED_STALE_TIMEOUT = ONE_MINUTE;
+export const MUTEX_CHECK_INTERVAL = 5 * ONE_SECOND;
+
 // https://developers.cloudflare.com/pages/platform/limits#builds
 // Pages Builds are allowed 20 minutes, and we're adding a buffer of time of 3 minutes to allow for queueing
 export const DEPLOYMENT_TIMEOUT = 23 * ONE_MINUTE;

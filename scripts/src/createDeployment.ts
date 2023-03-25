@@ -1,5 +1,6 @@
 import { ok } from "assert";
 import shellac from "shellac";
+import { acquireMutex } from "./acquireMutex";
 import {
 	DEPLOYMENT_CHECK_API_FAILURES_THRESHOLD,
 	DEPLOYMENT_CHECK_INTERVAL,
@@ -154,6 +155,13 @@ export const createDeployment = async ({
 			},
 		});
 
+		const mutexKey = encodeURIComponent(
+			`${host.api}:${pagesProject.CLOUDFLARE_ACCOUNT_ID}:${pagesProject.PROJECT_NAME}`
+		);
+		logger.log(`Aquiring Mutex for \`${mutexKey}\`...`);
+		const mutex = await acquireMutex({ logger, key: mutexKey });
+		logger.info("Done.", mutex);
+
 		logger.log(`Creating Deployment with Deploy Hook ${deployHookId}...`);
 		let deployHookResponse: Response;
 		let deployHookResponseText: string;
@@ -181,6 +189,22 @@ export const createDeployment = async ({
 			);
 		}
 		logger.info("Created Deployment.", id);
+
+		logger.log("Releasing Mutex...");
+		const releaseMutexResponse = await fetch(
+			`https://mutex.uno/api/${mutexKey}`,
+			{ method: "DELETE", headers: { "If-Match": mutex.ETag } }
+		);
+		if (!releaseMutexResponse.ok) {
+			logger.warn(
+				"Could not release Mutex.",
+				releaseMutexResponse.status,
+				releaseMutexResponse.statusText,
+				await releaseMutexResponse.text()
+			);
+		} else {
+			logger.info("Done.");
+		}
 	} else {
 		// TODO
 	}
