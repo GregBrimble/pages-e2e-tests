@@ -5,6 +5,7 @@ import { z } from "zod";
 import { argumentParser } from "zodcli";
 import { Environment, FIXTURES_PATH, Trigger } from "./src/config";
 import { createDeployment } from "./src/createDeployment";
+import { installWranglerVersion } from "./src/installWranglerVersion";
 import { Logger, LogLevel } from "./src/logger";
 import { runTests } from "./src/runTests";
 import { Feature, setUpFeatures } from "./src/setUpFeatures";
@@ -20,7 +21,14 @@ let teardownService: TeardownService | undefined = undefined;
 const main = async () => {
 	const startTimestamp = Date.now();
 
-	const { logLevel, fixturesInclude, fixturesExclude } = argumentParser({
+	const {
+		logLevel,
+		fixturesInclude,
+		fixturesExclude,
+		environment,
+		trigger,
+		wranglerVersion,
+	} = argumentParser({
 		options: z
 			.object({
 				logLevel: z
@@ -51,6 +59,21 @@ const main = async () => {
 							.refine((value) => existsSync(join(FIXTURES_PATH, value)))
 					)
 					.default([]),
+				environment: z
+					.union([
+						z.literal("production").transform(() => Environment.Production),
+						z.literal("staging").transform(() => Environment.Staging),
+						z.literal("local").transform(() => Environment.Local),
+					])
+					.default("production"),
+				trigger: z
+					.union([
+						z.literal("GitHub").transform(() => Trigger.GitHub),
+						z.literal("GitLab").transform(() => Trigger.GitLab),
+						z.literal("DirectUpload").transform(() => Trigger.DirectUpload),
+					])
+					.default("GitHub"),
+				wranglerVersion: z.string().default("beta"),
 			})
 			.strict(),
 	}).parse(process.argv.slice(2));
@@ -77,6 +100,12 @@ We're starting at ${startTimestamp}, and we're going to run the following fixtur
 This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger.`
 	);
 
+	await installWranglerVersion({
+		logger,
+		teardownService,
+		version: wranglerVersion,
+	});
+
 	const deployedFixtures = Object.fromEntries(
 		await Promise.all(
 			fixtures.map(async (fixture) => {
@@ -94,8 +123,8 @@ This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger
 				});
 				const { url } = await createDeployment({
 					timestamp: startTimestamp,
-					environment: ENVIRONMENT,
-					trigger: TRIGGER,
+					environment,
+					trigger,
 					logger: fixtureLogger,
 					teardownService,
 					fixture,

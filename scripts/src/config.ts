@@ -26,14 +26,15 @@ export const TEST_RESULTS_PAGES_PROJECT: PagesProjectCredentials = {
 };
 
 export enum Environment {
-	Production = "production",
-	// Staging = "staging",
+	Production,
+	Staging,
+	Local,
 }
 
 export enum Trigger {
 	GitHub,
-	// GitLab,
-	// DirectUpload,
+	GitLab,
+	DirectUpload,
 }
 
 export const PAGES_PROJECTS = {
@@ -44,15 +45,61 @@ export const PAGES_PROJECTS = {
 			PROJECT_NAME: "pages-e2e-tests-tmp",
 			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
 		},
+		[Trigger.GitLab]: {
+			// TODO
+			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+			PROJECT_NAME: "pages-e2e-tests-tmp",
+			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+		},
+		[Trigger.DirectUpload]: {
+			// TODO
+			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+			PROJECT_NAME: "pages-e2e-tests-tmp",
+			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+		},
 	},
-} satisfies Record<Environment, Record<Trigger, PagesProjectCredentials>>;
+	[Environment.Staging]: {
+		[Trigger.GitHub]: {
+			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+			PROJECT_NAME: "pages-e2e-tests-tmp",
+			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+		},
+		[Trigger.GitLab]: {
+			// TODO
+			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+			PROJECT_NAME: "pages-e2e-tests-tmp",
+			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+		},
+		[Trigger.DirectUpload]: {
+			// TODO
+			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+			PROJECT_NAME: "pages-e2e-tests-tmp",
+			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+		},
+	},
+} satisfies Record<
+	Environment.Production | Environment.Staging,
+	Record<Trigger, PagesProjectCredentials>
+>;
 
 export const HOSTS = {
 	[Environment.Production]: {
 		api: "https://api.cloudflare.com",
 		dash: "https://dash.cloudflare.com",
 	},
-} satisfies Record<Environment, { api: string; dash: string }>;
+	[Environment.Staging]: {
+		api: "https://api.staging.cloudflare.com",
+		dash: "https://dash.staging.cloudflare.com",
+	},
+} satisfies Record<
+	Environment.Production | Environment.Staging,
+	{ api: string; dash: string }
+>;
 
 export const TEST_INCLUDE = defaultInclude;
 export const TEST_EXCLUDE = defaultExclude;
