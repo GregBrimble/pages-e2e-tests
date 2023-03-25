@@ -34,9 +34,7 @@ export const acquireMutex = async ({
 
 	const timeout = setTimeout(rejectPromise, MUTEX_TIMEOUT);
 
-	let interval: NodeJS.Timer;
-
-	const attemptToAcquireMutex = async () => {
+	const interval = setInterval(async () => {
 		const resolve = (mutex: Mutex) => {
 			clearTimeout(timeout);
 			clearInterval(interval);
@@ -64,7 +62,7 @@ export const acquireMutex = async ({
 					key,
 					...((await response.json()) as MutexResponse),
 				};
-				logger.info("Mutex already locked.", mutex);
+				logger.debug("Mutex already locked.", mutex);
 				if (
 					Date.now() - new Date(mutex.timestamp).getTime() >=
 					MUTEX_CONSIDERED_STALE_TIMEOUT
@@ -96,9 +94,21 @@ export const acquireMutex = async ({
 				);
 			}
 		}
-	};
-
-	interval = setInterval(attemptToAcquireMutex, MUTEX_CHECK_INTERVAL);
+	}, MUTEX_CHECK_INTERVAL);
 
 	return promise;
+};
+
+export const releaseMutex = async ({ mutex }: { mutex: Mutex }) => {
+	const response = await fetch(`https://mutex.uno/api/${mutex.key}`, {
+		method: "DELETE",
+		headers: { "If-Match": mutex.ETag },
+	});
+	if (!response.ok) {
+		throw await transformResponseIntoError(
+			response,
+			await response.text(),
+			"Could not release Mutex."
+		);
+	}
 };

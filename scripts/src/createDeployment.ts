@@ -1,6 +1,5 @@
 import { ok } from "assert";
 import shellac from "shellac";
-import { acquireMutex } from "./acquireMutex";
 import {
 	DEPLOYMENT_CHECK_API_FAILURES_THRESHOLD,
 	DEPLOYMENT_CHECK_INTERVAL,
@@ -15,6 +14,7 @@ import {
 	Trigger,
 } from "./config";
 import { Logger } from "./logger";
+import { acquireMutex, releaseMutex } from "./mutexes";
 import { TeardownService } from "./teardownService";
 import { responseIsNotProvisioned, transformResponseIntoError } from "./utils";
 
@@ -191,20 +191,12 @@ export const createDeployment = async ({
 		logger.info("Created Deployment.", id);
 
 		logger.log("Releasing Mutex...");
-		const releaseMutexResponse = await fetch(
-			`https://mutex.uno/api/${mutexKey}`,
-			{ method: "DELETE", headers: { "If-Match": mutex.ETag } }
-		);
-		if (!releaseMutexResponse.ok) {
-			logger.warn(
-				"Could not release Mutex.",
-				releaseMutexResponse.status,
-				releaseMutexResponse.statusText,
-				await releaseMutexResponse.text()
-			);
-		} else {
-			logger.info("Done.");
+		try {
+			await releaseMutex({ mutex });
+		} catch (thrown) {
+			logger.warn(thrown);
 		}
+		logger.info("Done.");
 	} else {
 		// TODO
 	}
