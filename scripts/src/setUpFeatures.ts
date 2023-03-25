@@ -49,11 +49,11 @@ export async function setUpFeatures({
 						WORKSPACE_DIR: directory,
 					},
 				});
-			} catch (error) {
-				if (error.stderr === noMakeCommandStderr("setup")) {
+			} catch (thrown) {
+				if (thrown.stderr === noMakeCommandStderr("setup")) {
 					logger.info("No setup command found. Continuing...");
 				} else {
-					throw error;
+					throw thrown;
 				}
 			}
 			logger.info("Done.");

@@ -48,11 +48,11 @@ export async function setUpFixture({
 			cwd: directory,
 			encoding: "utf-8",
 		});
-	} catch (error) {
-		if (error.stderr.trimRight() === noMakeCommandStderr("setup")) {
+	} catch (thrown) {
+		if (thrown.stderr.trimRight() === noMakeCommandStderr("setup")) {
 			logger.info("No setup command found. Continuing...");
 		} else {
-			throw error;
+			throw thrown;
 		}
 	}
 	logger.info("Done.");

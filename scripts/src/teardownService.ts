@@ -20,8 +20,8 @@ export class TeardownService {
 				try {
 					await teardownFunction.function();
 					return { name: teardownFunction };
-				} catch (error) {
-					return { name: teardownFunction, error };
+				} catch (thrown) {
+					return { name: teardownFunction, error: thrown };
 				}
 			})
 		);
