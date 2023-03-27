@@ -1,4 +1,4 @@
-import { ok } from "assert";
+import assert, { ok } from "assert";
 import shellac from "shellac";
 import {
 	DEPLOYMENT_CHECK_API_FAILURES_THRESHOLD,
@@ -7,7 +7,9 @@ import {
 	Environment,
 	GIT_EMAIL_ADDRESS,
 	GIT_USERNAME,
+	Host,
 	HOSTS,
+	PagesProjectCredentials,
 	PAGES_PROJECTS,
 	PROVISIONER_CHECK_INTERVAL,
 	PROVISIONER_TIMEOUT,
@@ -15,6 +17,7 @@ import {
 } from "./config";
 import { Logger } from "./logger";
 import { acquireMutex, releaseMutex } from "./mutexes";
+import { FixtureConfig } from "./schemas";
 import { TeardownService } from "./teardownService";
 import { responseIsNotProvisioned, transformResponseIntoError } from "./utils";
 
@@ -28,6 +31,48 @@ interface DeployHookResponse {
 	result: {
 		id: string;
 	};
+}
+
+interface Project {
+	build_config: {
+		build_command: string;
+		destination_dir: string;
+		root_dir: string;
+	};
+	deployment_configs: {
+		preview: {
+			env_vars: Record<string, { type: "plain_text"; value: string }> | null;
+			compatibility_date: string;
+			compatibility_flags: string[];
+			d1_databases?: Record<
+				string,
+				{
+					id: string;
+				}
+			>;
+			durable_object_namespaces?: Record<string, { namespace_id: string }>;
+			kv_namespaces?: Record<string, { namespace_id: string }>;
+			r2_buckets?: Record<string, { name: string }>;
+			services?: Record<string, { service: string; environment: string }>;
+			queue_producers?: Record<string, { name: string }>;
+			analytics_engine_datasets?: Record<string, { dataset: string }>;
+		};
+	};
+	source?: {
+		type: "github" | "gitlab";
+		config: {
+			owner: string;
+			repo_name: string;
+			production_branch: string;
+			deployments_enabled: true;
+			production_deployments_enabled: false;
+			preview_deployment_setting: "none";
+		};
+	};
+}
+
+interface ProjectResponse {
+	result: Project;
 }
 
 interface DeploymentResponse {
@@ -47,6 +92,7 @@ export const createDeployment = async ({
 	logger,
 	teardownService,
 	fixture,
+	fixtureConfig,
 	directory,
 }: {
 	timestamp: number;
@@ -55,6 +101,7 @@ export const createDeployment = async ({
 	logger: Logger;
 	teardownService: TeardownService;
 	fixture: string;
+	fixtureConfig: FixtureConfig;
 	directory: string;
 }) => {
 	if (environment === Environment.Local) {
@@ -164,6 +211,13 @@ export const createDeployment = async ({
 			logger.log(`Aquiring Mutex for \`${mutexKey}\`...`);
 			const mutex = await acquireMutex({ logger, key: mutexKey });
 			logger.info("Done.", mutex);
+
+			await configureProject({
+				logger,
+				host,
+				projectCredentials: pagesProject,
+				fixtureConfig,
+			});
 
 			logger.log(`Creating Deployment with Deploy Hook ${deployHookId}...`);
 			let deployHookResponse: Response;
@@ -300,6 +354,316 @@ export const createDeployment = async ({
 		}
 
 		return { url };
+	}
+
+	async function configureProject({
+		logger,
+		host,
+		projectCredentials,
+		fixtureConfig,
+	}: {
+		logger: Logger;
+		host: Host;
+		projectCredentials: PagesProjectCredentials;
+		fixtureConfig: FixtureConfig;
+	}) {
+		ok([Environment.Production, Environment.Staging].includes(environment));
+
+		logger.log("Configuring project...");
+		logger.info("Getting initial project state...");
+		let initialResponse: Response;
+		let initialResponseText: string;
+		let initialProject: Project;
+		try {
+			initialResponse = await fetch(
+				`${host.api}/client/v4/accounts/${projectCredentials.CLOUDFLARE_ACCOUNT_ID}/pages/projects/${projectCredentials.PROJECT_NAME}`,
+				{
+					headers: {
+						Authorization: `Bearer ${projectCredentials.CLOUDFLARE_API_TOKEN}`,
+					},
+				}
+			);
+			initialResponseText = await initialResponse.text();
+
+			initialProject = (JSON.parse(initialResponseText) as ProjectResponse)
+				.result;
+
+			ok(initialProject);
+		} catch {
+			throw await transformResponseIntoError(
+				initialResponse,
+				initialResponseText
+			);
+		}
+		logger.info("Done.", initialProject);
+
+		logger.info("Computing required changes...");
+		const updatePayload: Project = {
+			build_config: {
+				build_command: fixtureConfig.buildConfig.buildCommand || "",
+				destination_dir: fixtureConfig.buildConfig.buildOutputDirectory || "",
+				root_dir: fixtureConfig.buildConfig.rootDirectory || "",
+			},
+			deployment_configs: {
+				preview: {
+					env_vars: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview.env_vars || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(
+								fixtureConfig.deploymentConfig.environmentVariables
+							).map(([name, value]) => [name, { type: "plain_text", value }])
+						),
+					},
+					compatibility_date: fixtureConfig.deploymentConfig.compatibilityDate,
+					compatibility_flags:
+						fixtureConfig.deploymentConfig.compatibilityFlags,
+					d1_databases: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview.d1_databases || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(fixtureConfig.deploymentConfig.d1Databases).map(
+								([name, value]) => [name, value[environment]]
+							)
+						),
+					},
+					durable_object_namespaces: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview
+									.durable_object_namespaces || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(
+								fixtureConfig.deploymentConfig.durableObjectNamespaces
+							).map(([name, value]) => [
+								name,
+								{
+									namespace_id: value[environment].id,
+								},
+							])
+						),
+					},
+					kv_namespaces: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview.kv_namespaces || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(fixtureConfig.deploymentConfig.kvNamespaces).map(
+								([name, value]) => [
+									name,
+									{
+										namespace_id: value[environment].id,
+									},
+								]
+							)
+						),
+					},
+					r2_buckets: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview.r2_buckets || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(fixtureConfig.deploymentConfig.r2Buckets).map(
+								([name, value]) => [name, value[environment]]
+							)
+						),
+					},
+					services: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview.services || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(fixtureConfig.deploymentConfig.services).map(
+								([name, value]) => [
+									name,
+									{
+										service: value[environment].name,
+										environment: value[environment].environment,
+									},
+								]
+							)
+						),
+					},
+					queue_producers: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview.queue_producers || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(fixtureConfig.deploymentConfig.queueProducers).map(
+								([name, value]) => [name, value[environment]]
+							)
+						),
+					},
+					analytics_engine_datasets: {
+						...Object.fromEntries(
+							Object.keys(
+								initialProject.deployment_configs.preview
+									.analytics_engine_datasets || {}
+							).map((name) => [name, null])
+						),
+						...Object.fromEntries(
+							Object.entries(
+								fixtureConfig.deploymentConfig.analyticsEngineDatasets
+							).map(([name, value]) => [
+								name,
+								{
+									dataset: value[environment].name,
+								},
+							])
+						),
+					},
+				},
+			},
+		};
+		logger.info("Done.", updatePayload);
+
+		logger.info("Updating project...");
+		let projectResponse: Response;
+		let projectResponseText: string;
+		let project: Project;
+		try {
+			projectResponse = await fetch(
+				`${host.api}/client/v4/accounts/${projectCredentials.CLOUDFLARE_ACCOUNT_ID}/pages/projects/${projectCredentials.PROJECT_NAME}`,
+				{
+					method: "PATCH",
+					headers: {
+						Authorization: `Bearer ${projectCredentials.CLOUDFLARE_API_TOKEN}`,
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(updatePayload),
+				}
+			);
+
+			projectResponseText = await projectResponse.text();
+
+			project = (JSON.parse(projectResponseText) as ProjectResponse).result;
+
+			ok(
+				project.build_config.build_command ===
+					fixtureConfig.buildConfig.buildCommand,
+				"Build command was not set correctly."
+			);
+			ok(
+				project.build_config.destination_dir ===
+					fixtureConfig.buildConfig.buildOutputDirectory,
+				"Build output directory was not set correctly."
+			);
+			ok(
+				project.build_config.root_dir ===
+					fixtureConfig.buildConfig.rootDirectory,
+				"Root directory was not set correctly."
+			);
+
+			assert.deepStrictEqual(
+				Object.entries(project.deployment_configs.preview.env_vars || {}),
+				Object.entries(fixtureConfig.deploymentConfig.environmentVariables).map(
+					([name, value]) => [name, { type: "plain_text", value }]
+				),
+				"Environment variables were not set correctly."
+			);
+			assert.deepStrictEqual(
+				project.deployment_configs.preview.compatibility_date,
+				fixtureConfig.deploymentConfig.compatibilityDate,
+				"Compatibility date was not set correctly."
+			);
+			assert.deepStrictEqual(
+				project.deployment_configs.preview.compatibility_flags,
+				fixtureConfig.deploymentConfig.compatibilityFlags,
+				"Compatibility flags were not set correctly."
+			);
+			assert.deepStrictEqual(
+				Object.entries(project.deployment_configs.preview.d1_databases || {}),
+				Object.entries(fixtureConfig.deploymentConfig.d1Databases).map(
+					([name, value]) => [name, value[environment]]
+				),
+				"D1 database bindings were not set correctly."
+			);
+			assert.deepStrictEqual(
+				Object.entries(
+					project.deployment_configs.preview.durable_object_namespaces || {}
+				),
+				Object.entries(
+					fixtureConfig.deploymentConfig.durableObjectNamespaces
+				).map(([name, value]) => [
+					name,
+					{ namespace_id: value[environment].id },
+				]),
+				"Durable Object namespace bindings were not set correctly."
+			);
+			assert.deepStrictEqual(
+				Object.entries(project.deployment_configs.preview.kv_namespaces || {}),
+				Object.entries(fixtureConfig.deploymentConfig.kvNamespaces).map(
+					([name, value]) => [name, { namespace_id: value[environment].id }]
+				),
+				"KV namespace bindings were not set correctly."
+			);
+			assert.deepStrictEqual(
+				Object.entries(project.deployment_configs.preview.r2_buckets || {}),
+				Object.entries(fixtureConfig.deploymentConfig.r2Buckets).map(
+					([name, value]) => [name, value[environment]]
+				),
+				"R2 bucket bindings were not set correctly."
+			);
+			assert.deepStrictEqual(
+				Object.entries(project.deployment_configs.preview.services || {}),
+				Object.entries(fixtureConfig.deploymentConfig.services).map(
+					([name, value]) => [
+						name,
+						{
+							service: value[environment].name,
+							environment: value[environment].environment,
+						},
+					]
+				),
+				"Service bindings were not set correctly."
+			);
+			assert.deepStrictEqual(
+				Object.entries(
+					project.deployment_configs.preview.queue_producers || {}
+				),
+				Object.entries(fixtureConfig.deploymentConfig.queueProducers).map(
+					([name, value]) => [name, value[environment]]
+				),
+				"Queue Producer bindings were not set correctly."
+			);
+			assert.deepStrictEqual(
+				Object.entries(
+					project.deployment_configs.preview.analytics_engine_datasets || {}
+				),
+				Object.entries(
+					fixtureConfig.deploymentConfig.analyticsEngineDatasets
+				).map(([name, value]) => [
+					name,
+					{
+						dataset: value[environment].name,
+					},
+				]),
+				"Analytics Engine dataset bindings were not set correctly."
+			);
+		} catch (e) {
+			throw await transformResponseIntoError(
+				projectResponse,
+				projectResponseText,
+				`${e}`
+			);
+		}
+		logger.info("Done.", project);
 	}
 
 	async function waitForDeploymentToBeProvisioned({

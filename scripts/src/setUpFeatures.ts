@@ -1,6 +1,5 @@
 import { execSync } from "child_process";
 import { join } from "path";
-import shellac from "shellac";
 import { FEATURES_PATH } from "./config";
 import { Logger } from "./logger";
 import { noMakeCommandStderr } from "./utils";
@@ -10,25 +9,20 @@ export interface Feature {
 	path: string;
 }
 
-export async function setUpFeatures({
+export const setUpFeatures = ({
 	logger,
+	featureNames: featureNames,
 	directory,
 }: {
 	logger: Logger;
+	featureNames: string[];
 	directory: string;
-}) {
+}) => {
 	logger.info(`Parsing fixture features...`);
-	let features: Feature[] = [];
-	const featuresStdio = await shellac.in(directory)`
-		$ make features
-	`;
-	features = featuresStdio.stdout
-		.split(" ")
-		.filter(Boolean)
-		.map((feature) => ({
-			name: feature,
-			path: join(FEATURES_PATH, feature),
-		}));
+	const features: Feature[] = featureNames.filter(Boolean).map((feature) => ({
+		name: feature,
+		path: join(FEATURES_PATH, feature),
+	}));
 	logger.info("Done.", features);
 
 	if (features.length > 0) {
@@ -62,4 +56,4 @@ export async function setUpFeatures({
 	}
 
 	return { features };
-}
+};

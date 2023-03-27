@@ -12,8 +12,9 @@ export const installWranglerVersion = async ({
 	teardownService: TeardownService;
 	version: string;
 }) => {
-	logger.log("Installing wrangler version...");
+	logger.log(`Installing wrangler@${version}...`);
 	await shellac.in(DIRNAME)`
+		$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
 		$ npm install --no-save wrangler@${version}
 		stdout >> ${logger.info}
 		$ npx wrangler --version
@@ -25,6 +26,7 @@ export const installWranglerVersion = async ({
 		name: "Reinstall dependencies",
 		function: async () => {
 			await shellac.in(DIRNAME)`
+				$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
 				$ npm install
 				stdout >> ${logger.info}
 		`;

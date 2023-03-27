@@ -1,20 +1,20 @@
-import { execSync } from "child_process";
-import { cp, mkdir } from "fs/promises";
+import { cp, mkdir, readFile } from "fs/promises";
 import { globby } from "globby";
 import { tmpdir } from "os";
 import { join, relative } from "path";
 import shellac from "shellac";
-import { ASSETS_PATH, FIXTURES_PATH } from "./config";
+import stripJsonComments from "strip-json-comments";
+import { FIXTURES_PATH } from "./config";
 import { Logger } from "./logger";
-import { noMakeCommandStderr } from "./utils";
+import { fixturesSchema } from "./schemas";
 
-export async function setUpFixture({
+export const setUpFixture = async ({
 	logger,
 	fixture,
 }: {
 	logger: Logger;
 	fixture: string;
-}) {
+}) => {
 	const directory = join(tmpdir(), Math.random().toString(36).slice(2));
 	const fixtureDirectory = join(FIXTURES_PATH, fixture);
 
@@ -35,27 +35,27 @@ export async function setUpFixture({
 	await Promise.all(promisesToCopy);
 	logger.info(`Done.`);
 
-	logger.log("Setting up the fixture...");
-	await shellac.in(directory)`
-		$ cat ${join(ASSETS_PATH, "appendage.Makefile")} >> ${join(
-		directory,
-		"Makefile"
-	)}
-	`;
-	// Can't use shellac for commands which may fail in a particular way :(
-	try {
-		execSync("make setup", {
-			cwd: directory,
-			encoding: "utf-8",
-		});
-	} catch (thrown) {
-		if (thrown.stderr.trimRight() === noMakeCommandStderr("setup")) {
-			logger.info("No setup command found. Continuing...");
-		} else {
-			throw thrown;
-		}
+	logger.log("Reading fixture config...");
+	const config = fixturesSchema.parse(
+		JSON.parse(
+			stripJsonComments(
+				await readFile(join(directory, "main.fixture"), "utf-8")
+			)
+		)
+	);
+	logger.info("Done.");
+
+	logger.log("Configuring fixture...");
+	if (config.setup) {
+		await shellac.in(directory)`
+			$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
+			$ ${config.setup}
+			stdout >> ${logger.info}
+		`;
+	} else {
+		logger.info("No setup command found. Continuing...");
 	}
 	logger.info("Done.");
 
-	return { directory };
-}
+	return { config, directory };
+};

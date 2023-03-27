@@ -113,12 +113,13 @@ This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger
 					logger,
 					label: `[${fixture}]`,
 				});
-				const { directory } = await setUpFixture({
+				const { directory, config: fixtureConfig } = await setUpFixture({
 					logger: fixtureLogger,
 					fixture,
 				});
 				const { features } = await setUpFeatures({
 					logger: fixtureLogger,
+					featureNames: fixtureConfig.features,
 					directory,
 				});
 				const { url } = await createDeployment({
@@ -128,6 +129,7 @@ This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger
 					logger: fixtureLogger,
 					teardownService,
 					fixture,
+					fixtureConfig,
 					directory,
 				});
 				return [fixture, { url, features }];
