@@ -3,9 +3,14 @@
 		{
 			"fileMatch": ["main.fixture"],
 			"url": "./schemas/fixture-schema.jsonc"
+		},
+		{
+			"fileMatch": ["main.feature"],
+			"url": "./schemas/feature-schema.jsonc"
 		}
 	],
 	"files.associations": {
-		"main.fixture": "jsonc"
+		"main.fixture": "jsonc",
+		"main.feature": "jsonc"
 	}
 }

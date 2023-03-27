@@ -1,29 +1,37 @@
-import { execSync } from "child_process";
+import { readFile } from "fs/promises";
 import { join } from "path";
-import { FEATURES_PATH } from "./config";
+import shellac from "shellac";
+import stripJsonComments from "strip-json-comments";
 import { Logger } from "./logger";
-import { noMakeCommandStderr } from "./utils";
+import { FeatureConfig, featuresSchema } from "./schemas";
 
 export interface Feature {
 	name: string;
 	path: string;
 }
 
-export const setUpFeatures = ({
+export type FeaturesConfig = Pick<Required<FeatureConfig>, "deploymentConfig">;
+
+export const setUpFeatures = async ({
 	logger,
-	featureNames: featureNames,
+	features,
 	directory,
 }: {
 	logger: Logger;
-	featureNames: string[];
+	features: Feature[];
 	directory: string;
 }) => {
-	logger.info(`Parsing fixture features...`);
-	const features: Feature[] = featureNames.filter(Boolean).map((feature) => ({
-		name: feature,
-		path: join(FEATURES_PATH, feature),
-	}));
-	logger.info("Done.", features);
+	const featuresConfig: FeaturesConfig = {
+		deploymentConfig: {
+			environmentVariables: {},
+			d1Databases: {},
+			durableObjectNamespaces: {},
+			kvNamespaces: {},
+			r2Buckets: {},
+			services: {},
+			queueProducers: {},
+		},
+	};
 
 	if (features.length > 0) {
 		logger.log(
@@ -31,29 +39,63 @@ export const setUpFeatures = ({
 				.map(({ name }) => name)
 				.join(", ")}...`
 		);
+
 		for (const { name, path } of features) {
+			logger.log("Reading fixture config...");
+			const config = featuresSchema.parse(
+				JSON.parse(
+					stripJsonComments(await readFile(join(path, "main.feature"), "utf-8"))
+				)
+			);
+			logger.info("Done.");
+
+			featuresConfig.deploymentConfig = {
+				environmentVariables: {
+					...featuresConfig.deploymentConfig.environmentVariables,
+					...config.deploymentConfig.environmentVariables,
+				},
+				d1Databases: {
+					...featuresConfig.deploymentConfig.d1Databases,
+					...config.deploymentConfig.d1Databases,
+				},
+				durableObjectNamespaces: {
+					...featuresConfig.deploymentConfig.durableObjectNamespaces,
+					...config.deploymentConfig.durableObjectNamespaces,
+				},
+				kvNamespaces: {
+					...featuresConfig.deploymentConfig.kvNamespaces,
+					...config.deploymentConfig.kvNamespaces,
+				},
+				r2Buckets: {
+					...featuresConfig.deploymentConfig.r2Buckets,
+					...config.deploymentConfig.r2Buckets,
+				},
+				services: {
+					...featuresConfig.deploymentConfig.services,
+					...config.deploymentConfig.services,
+				},
+				queueProducers: {
+					...featuresConfig.deploymentConfig.queueProducers,
+					...config.deploymentConfig.queueProducers,
+				},
+			};
+
 			logger.log(`Setting up feature ${name}...`);
-			// Can't use shellac for commands which may fail in a particular way :(
-			try {
-				execSync("make setup", {
-					cwd: path,
-					encoding: "utf-8",
-					env: {
-						...process.env,
-						WORKSPACE_DIR: directory,
-					},
-				});
-			} catch (thrown) {
-				if (thrown.stderr === noMakeCommandStderr("setup")) {
-					logger.info("No setup command found. Continuing...");
-				} else {
-					throw thrown;
-				}
+			if (config.setup) {
+				await shellac.in(path)`
+					$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
+					$ export WORKSPACE_DIR=${directory}
+					$ ${config.setup}
+					stdout >> ${logger.info}
+				`;
+			} else {
+				logger.info("No setup command found. Continuing...");
 			}
 			logger.info("Done.");
 		}
+
 		logger.info("Done.");
 	}
 
-	return { features };
+	return { config: featuresConfig };
 };

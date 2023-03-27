@@ -4,59 +4,14 @@
 {
   "type": "object",
   "properties": {
-    "features": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "default": [],
-      "description": "The features to apply to this fixture project."
-    },
     "setup": {
       "type": "string",
-      "description": "The command to run ahead of time in order to configure this fixture project."
-    },
-    "buildConfig": {
-      "type": "object",
-      "properties": {
-        "buildCommand": {
-          "type": "string",
-          "default": "",
-          "description": "The command to run to build the project."
-        },
-        "buildOutputDirectory": {
-          "type": "string",
-          "default": "",
-          "description": "The directory of static assets to serve in a deployment."
-        },
-        "rootDirectory": {
-          "type": "string",
-          "default": "",
-          "description": "The root directory of the project."
-        }
-      },
-      "additionalProperties": false,
-      "description": "The build configuration to use when building the project."
+      "minLength": 1,
+      "description": "The command to run to apply this feature to a fixture project."
     },
     "deploymentConfig": {
       "type": "object",
       "properties": {
-        "compatibilityDate": {
-          "type": "string",
-          "pattern": "^\\d{4}-[01]\\d-[0123]\\d$",
-          "default": "2023-03-26",
-          "description": "The runtime compatibility date for Pages Functions."
-        },
-        "compatibilityFlags": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "default": [],
-          "description": "The runtime compatibility flags for Pages Functions."
-        },
         "environmentVariables": {
           "type": "object",
           "additionalProperties": {
@@ -403,13 +358,12 @@
       },
       "additionalProperties": false,
       "default": {},
-      "description": "The deployment configuration to use when deploying the project."
+      "description": "The additional deployment configuration to use when deploying this feature."
     }
   },
   "required": [
-    "buildConfig"
+    "setup"
   ],
   "additionalProperties": false,
-  "description": "A project fixture.",
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

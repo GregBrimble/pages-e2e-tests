@@ -18,6 +18,7 @@ import {
 import { Logger } from "./logger";
 import { acquireMutex, releaseMutex } from "./mutexes";
 import { FixtureConfig } from "./schemas";
+import { FeaturesConfig } from "./setUpFeatures";
 import { TeardownService } from "./teardownService";
 import { responseIsNotProvisioned, transformResponseIntoError } from "./utils";
 
@@ -41,9 +42,9 @@ interface Project {
 	};
 	deployment_configs: {
 		preview: {
-			env_vars: Record<string, { type: "plain_text"; value: string }> | null;
 			compatibility_date: string;
 			compatibility_flags: string[];
+			env_vars: Record<string, { type: "plain_text"; value: string }> | null;
 			d1_databases?: Record<
 				string,
 				{
@@ -93,6 +94,7 @@ export const createDeployment = async ({
 	teardownService,
 	fixture,
 	fixtureConfig,
+	featuresConfig,
 	directory,
 }: {
 	timestamp: number;
@@ -102,6 +104,7 @@ export const createDeployment = async ({
 	teardownService: TeardownService;
 	fixture: string;
 	fixtureConfig: FixtureConfig;
+	featuresConfig: FeaturesConfig;
 	directory: string;
 }) => {
 	if (environment === Environment.Local) {
@@ -217,6 +220,7 @@ export const createDeployment = async ({
 				host,
 				projectCredentials: pagesProject,
 				fixtureConfig,
+				featuresConfig,
 			});
 
 			logger.log(`Creating Deployment with Deploy Hook ${deployHookId}...`);
@@ -361,11 +365,13 @@ export const createDeployment = async ({
 		host,
 		projectCredentials,
 		fixtureConfig,
+		featuresConfig,
 	}: {
 		logger: Logger;
 		host: Host;
 		projectCredentials: PagesProjectCredentials;
 		fixtureConfig: FixtureConfig;
+		featuresConfig: FeaturesConfig;
 	}) {
 		ok([Environment.Production, Environment.Staging].includes(environment));
 
@@ -398,6 +404,40 @@ export const createDeployment = async ({
 		logger.info("Done.", initialProject);
 
 		logger.info("Computing required changes...");
+		const combinedDeploymentConfig: FeaturesConfig["deploymentConfig"] = {
+			environmentVariables: {
+				...fixtureConfig.deploymentConfig.environmentVariables,
+				...featuresConfig.deploymentConfig.environmentVariables,
+			},
+			d1Databases: {
+				...fixtureConfig.deploymentConfig.d1Databases,
+				...featuresConfig.deploymentConfig.d1Databases,
+			},
+			durableObjectNamespaces: {
+				...fixtureConfig.deploymentConfig.durableObjectNamespaces,
+				...featuresConfig.deploymentConfig.durableObjectNamespaces,
+			},
+			kvNamespaces: {
+				...fixtureConfig.deploymentConfig.kvNamespaces,
+				...featuresConfig.deploymentConfig.kvNamespaces,
+			},
+			r2Buckets: {
+				...fixtureConfig.deploymentConfig.r2Buckets,
+				...featuresConfig.deploymentConfig.r2Buckets,
+			},
+			services: {
+				...fixtureConfig.deploymentConfig.services,
+				...featuresConfig.deploymentConfig.services,
+			},
+			queueProducers: {
+				...fixtureConfig.deploymentConfig.queueProducers,
+				...featuresConfig.deploymentConfig.queueProducers,
+			},
+			analyticsEngineDatasets: {
+				...fixtureConfig.deploymentConfig.analyticsEngineDatasets,
+				...featuresConfig.deploymentConfig.analyticsEngineDatasets,
+			},
+		};
 		const updatePayload: Project = {
 			build_config: {
 				build_command: fixtureConfig.buildConfig.buildCommand || "",
@@ -406,6 +446,9 @@ export const createDeployment = async ({
 			},
 			deployment_configs: {
 				preview: {
+					compatibility_date: fixtureConfig.deploymentConfig.compatibilityDate,
+					compatibility_flags:
+						fixtureConfig.deploymentConfig.compatibilityFlags,
 					env_vars: {
 						...Object.fromEntries(
 							Object.keys(
@@ -413,14 +456,11 @@ export const createDeployment = async ({
 							).map((name) => [name, null])
 						),
 						...Object.fromEntries(
-							Object.entries(
-								fixtureConfig.deploymentConfig.environmentVariables
-							).map(([name, value]) => [name, { type: "plain_text", value }])
+							Object.entries(combinedDeploymentConfig.environmentVariables).map(
+								([name, value]) => [name, { type: "plain_text", value }]
+							)
 						),
 					},
-					compatibility_date: fixtureConfig.deploymentConfig.compatibilityDate,
-					compatibility_flags:
-						fixtureConfig.deploymentConfig.compatibilityFlags,
 					d1_databases: {
 						...Object.fromEntries(
 							Object.keys(
@@ -428,7 +468,7 @@ export const createDeployment = async ({
 							).map((name) => [name, null])
 						),
 						...Object.fromEntries(
-							Object.entries(fixtureConfig.deploymentConfig.d1Databases).map(
+							Object.entries(combinedDeploymentConfig.d1Databases).map(
 								([name, value]) => [name, value[environment]]
 							)
 						),
@@ -442,7 +482,7 @@ export const createDeployment = async ({
 						),
 						...Object.fromEntries(
 							Object.entries(
-								fixtureConfig.deploymentConfig.durableObjectNamespaces
+								combinedDeploymentConfig.durableObjectNamespaces
 							).map(([name, value]) => [
 								name,
 								{
@@ -458,7 +498,7 @@ export const createDeployment = async ({
 							).map((name) => [name, null])
 						),
 						...Object.fromEntries(
-							Object.entries(fixtureConfig.deploymentConfig.kvNamespaces).map(
+							Object.entries(combinedDeploymentConfig.kvNamespaces).map(
 								([name, value]) => [
 									name,
 									{
@@ -475,7 +515,7 @@ export const createDeployment = async ({
 							).map((name) => [name, null])
 						),
 						...Object.fromEntries(
-							Object.entries(fixtureConfig.deploymentConfig.r2Buckets).map(
+							Object.entries(combinedDeploymentConfig.r2Buckets).map(
 								([name, value]) => [name, value[environment]]
 							)
 						),
@@ -487,7 +527,7 @@ export const createDeployment = async ({
 							).map((name) => [name, null])
 						),
 						...Object.fromEntries(
-							Object.entries(fixtureConfig.deploymentConfig.services).map(
+							Object.entries(combinedDeploymentConfig.services).map(
 								([name, value]) => [
 									name,
 									{
@@ -505,7 +545,7 @@ export const createDeployment = async ({
 							).map((name) => [name, null])
 						),
 						...Object.fromEntries(
-							Object.entries(fixtureConfig.deploymentConfig.queueProducers).map(
+							Object.entries(combinedDeploymentConfig.queueProducers).map(
 								([name, value]) => [name, value[environment]]
 							)
 						),
@@ -519,7 +559,7 @@ export const createDeployment = async ({
 						),
 						...Object.fromEntries(
 							Object.entries(
-								fixtureConfig.deploymentConfig.analyticsEngineDatasets
+								combinedDeploymentConfig.analyticsEngineDatasets
 							).map(([name, value]) => [
 								name,
 								{
@@ -571,13 +611,6 @@ export const createDeployment = async ({
 			);
 
 			assert.deepStrictEqual(
-				Object.entries(project.deployment_configs.preview.env_vars || {}),
-				Object.entries(fixtureConfig.deploymentConfig.environmentVariables).map(
-					([name, value]) => [name, { type: "plain_text", value }]
-				),
-				"Environment variables were not set correctly."
-			);
-			assert.deepStrictEqual(
 				project.deployment_configs.preview.compatibility_date,
 				fixtureConfig.deploymentConfig.compatibilityDate,
 				"Compatibility date was not set correctly."
@@ -588,8 +621,15 @@ export const createDeployment = async ({
 				"Compatibility flags were not set correctly."
 			);
 			assert.deepStrictEqual(
+				Object.entries(project.deployment_configs.preview.env_vars || {}),
+				Object.entries(combinedDeploymentConfig.environmentVariables).map(
+					([name, value]) => [name, { type: "plain_text", value }]
+				),
+				"Environment variables were not set correctly."
+			);
+			assert.deepStrictEqual(
 				Object.entries(project.deployment_configs.preview.d1_databases || {}),
-				Object.entries(fixtureConfig.deploymentConfig.d1Databases).map(
+				Object.entries(combinedDeploymentConfig.d1Databases).map(
 					([name, value]) => [name, value[environment]]
 				),
 				"D1 database bindings were not set correctly."
@@ -598,31 +638,28 @@ export const createDeployment = async ({
 				Object.entries(
 					project.deployment_configs.preview.durable_object_namespaces || {}
 				),
-				Object.entries(
-					fixtureConfig.deploymentConfig.durableObjectNamespaces
-				).map(([name, value]) => [
-					name,
-					{ namespace_id: value[environment].id },
-				]),
+				Object.entries(combinedDeploymentConfig.durableObjectNamespaces).map(
+					([name, value]) => [name, { namespace_id: value[environment].id }]
+				),
 				"Durable Object namespace bindings were not set correctly."
 			);
 			assert.deepStrictEqual(
 				Object.entries(project.deployment_configs.preview.kv_namespaces || {}),
-				Object.entries(fixtureConfig.deploymentConfig.kvNamespaces).map(
+				Object.entries(combinedDeploymentConfig.kvNamespaces).map(
 					([name, value]) => [name, { namespace_id: value[environment].id }]
 				),
 				"KV namespace bindings were not set correctly."
 			);
 			assert.deepStrictEqual(
 				Object.entries(project.deployment_configs.preview.r2_buckets || {}),
-				Object.entries(fixtureConfig.deploymentConfig.r2Buckets).map(
+				Object.entries(combinedDeploymentConfig.r2Buckets).map(
 					([name, value]) => [name, value[environment]]
 				),
 				"R2 bucket bindings were not set correctly."
 			);
 			assert.deepStrictEqual(
 				Object.entries(project.deployment_configs.preview.services || {}),
-				Object.entries(fixtureConfig.deploymentConfig.services).map(
+				Object.entries(combinedDeploymentConfig.services).map(
 					([name, value]) => [
 						name,
 						{
@@ -637,7 +674,7 @@ export const createDeployment = async ({
 				Object.entries(
 					project.deployment_configs.preview.queue_producers || {}
 				),
-				Object.entries(fixtureConfig.deploymentConfig.queueProducers).map(
+				Object.entries(combinedDeploymentConfig.queueProducers).map(
 					([name, value]) => [name, value[environment]]
 				),
 				"Queue Producer bindings were not set correctly."
@@ -646,14 +683,14 @@ export const createDeployment = async ({
 				Object.entries(
 					project.deployment_configs.preview.analytics_engine_datasets || {}
 				),
-				Object.entries(
-					fixtureConfig.deploymentConfig.analyticsEngineDatasets
-				).map(([name, value]) => [
-					name,
-					{
-						dataset: value[environment].name,
-					},
-				]),
+				Object.entries(combinedDeploymentConfig.analyticsEngineDatasets).map(
+					([name, value]) => [
+						name,
+						{
+							dataset: value[environment].name,
+						},
+					]
+				),
 				"Analytics Engine dataset bindings were not set correctly."
 			);
 		} catch (e) {

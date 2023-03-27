@@ -34,13 +34,13 @@ Features are given the following environment variables:
 
 - `WORKSPACE_DIR`, the fixture directory that is being used in this test run.
 
-1.  Create a `/features/<name-of-feature>/Makefile` file:
+1.  Create a `/features/<name-of-feature>/main.feature` file:
 
-    ```makefile
-    setup:
-    	# The command you want to run to apply the feature to the fixture
-    	mkdir -p ${WORKSPACE_DIR}/functions
-    	cp assets/functions-date.ts ${WORKSPACE_DIR}/functions/date.ts
+    ```jsonc
+    {
+    	// Any bootstrapping command you want to run in order to apply this feature to the fixture
+    	"setup": "mkdir -p ${WORKSPACE_DIR}/functions && cp assets/functions-date.ts ${WORKSPACE_DIR}/functions/date.ts"
+    }
     ```
 
 An example of running TypeScript in a setup command can be found in the [next-pages-experimental-edge-api-route](./features/next-pages-experimental-edge-api-route/) feature.
@@ -83,21 +83,23 @@ Additionally, tests in the `/__tests__/` directory are run globally on every fix
 - [x] Apply Cloudflare_CA.pem
 - [x] Pretty results
 - [x] Allow custom build output directories
-- [ ] Matrix mode
+- [x] Matrix mode
 
   - [x] Matrix reporting
-  - [ ] Matrix running
+  - [x] Matrix running
   - [x] Lock service
 
 - [ ] Local mode using Wrangler
 - [ ] Staging mode
 - [ ] Direct Upload mode
-- [ ] Decent logging
-- [ ] Allow customizable deployment config per fixture
+- [x] Decent logging
+- [x] Allow customizable deployment config per fixture
 - [ ] Migrate security test
 - [ ] Populate with a selection of framework fixtures
 - [ ] Move to TeamCity and configure cron
 - [ ] Alert failures
+- [ ] Make it easier to add new types of bindings
+- [ ] Error when there's a conflict on binding names
 
 ### Optional nice-to-haves
 

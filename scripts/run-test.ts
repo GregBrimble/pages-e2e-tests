@@ -117,9 +117,9 @@ This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger
 					logger: fixtureLogger,
 					fixture,
 				});
-				const { features } = await setUpFeatures({
+				const { config: featuresConfig } = await setUpFeatures({
 					logger: fixtureLogger,
-					featureNames: fixtureConfig.features,
+					features: fixtureConfig.features,
 					directory,
 				});
 				const { url } = await createDeployment({
@@ -130,9 +130,10 @@ This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger
 					teardownService,
 					fixture,
 					fixtureConfig,
+					featuresConfig,
 					directory,
 				});
-				return [fixture, { url, features }];
+				return [fixture, { url, features: fixtureConfig.features }];
 			}) as Promise<[string, { url: string; features: Feature[] }]>[]
 		)
 	);
