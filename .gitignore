@@ -199,3 +199,5 @@ dist
 
 /fixtures/create-react-app/**/*
 !/fixtures/create-react-app/.gitignore
+
+!/fixtures/*/main.fixture

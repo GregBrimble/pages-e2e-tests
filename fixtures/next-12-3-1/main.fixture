@@ -1,0 +1,7 @@
+{
+	"features": ["next-pages-experimental-edge-api-route"],
+	"buildConfig": {
+		"buildCommand": "npx @cloudflare/next-on-pages --experimental-minify",
+		"buildOutputDirectory": ".vercel/output/static"
+	}
+}

@@ -1,0 +1,11 @@
+{
+	"json.schemas": [
+		{
+			"fileMatch": ["main.fixture"],
+			"url": "./schemas/fixture-schema.jsonc"
+		}
+	],
+	"files.associations": {
+		"main.fixture": "jsonc"
+	}
+}

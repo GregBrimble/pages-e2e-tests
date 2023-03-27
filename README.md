@@ -14,24 +14,19 @@ Fixtures and features can each have their own tests.
 
 1.  Add any test files to this directory that you want to run against the fixture. More on how to write the tests [below](#writing-a-test).
 
-1.  Create a `/fixtures/<name-of-test>/Makefile` file:
+1.  Create a `/fixtures/<name-of-test>/main.fixture` file:
 
-    ```makefile
-    features := list-of-features you-want-to-apply to-this-fixture
-
-    setup:
-    	# Any bootstrapping command you want to run before triggering a build on the fixture
-    	npx create-react-app@latest
-
-    build:
-    	# The build command you want to run
-    	echo "Hi"
-
-    # The directory of static assets to deploy
-    build-output-directory := public
+    ```jsonc
+    {
+    	"features": ["list-of-features", "you-want-to-apply", "to-this-fixture"],
+    	// Any bootstrapping command you want to run before triggering a build on the fixture
+    	"setup": "npx create-react-app@latest",
+    	"buildConfig": {
+    		"buildCommand": "echo \"hi\"",
+    		"buildOutputDirectory": "public"
+    	}
+    }
     ```
-
-    `build` and `build-output-directory` are required, but all others are optional. If you want a dummy build command, you can use `echo "Hi"`.
 
 ## Adding a new feature
 

@@ -12,7 +12,7 @@ export const GIT_REPO = "git@github.com:GregBrimble/pages-e2e-tests.git";
 export const GIT_USERNAME = "Pages e2e Tests Bot";
 export const GIT_EMAIL_ADDRESS = "cloudflare-pages-team@cloudflare.com";
 
-interface PagesProjectCredentials {
+export interface PagesProjectCredentials {
 	CLOUDFLARE_ACCOUNT_ID: string;
 	CLOUDFLARE_API_TOKEN: string;
 	PROJECT_NAME: string;
@@ -26,15 +26,15 @@ export const TEST_RESULTS_PAGES_PROJECT: PagesProjectCredentials = {
 };
 
 export enum Environment {
-	Production,
-	Staging,
-	Local,
+	Production = "production",
+	Staging = "staging",
+	Local = "local",
 }
 
 export enum Trigger {
-	GitHub,
-	GitLab,
-	DirectUpload,
+	GitHub = "GitHub",
+	GitLab = "GitLab",
+	DirectUpload = "Direct Upload",
 }
 
 export const PAGES_PROJECTS = {
@@ -87,6 +87,11 @@ export const PAGES_PROJECTS = {
 	Record<Trigger, PagesProjectCredentials>
 >;
 
+export interface Host {
+	api: string;
+	dash: string;
+}
+
 export const HOSTS = {
 	[Environment.Production]: {
 		api: "https://api.cloudflare.com",
@@ -96,10 +101,7 @@ export const HOSTS = {
 		api: "https://api.staging.cloudflare.com",
 		dash: "https://dash.staging.cloudflare.com",
 	},
-} satisfies Record<
-	Environment.Production | Environment.Staging,
-	{ api: string; dash: string }
->;
+} satisfies Record<Environment.Production | Environment.Staging, Host>;
 
 export const TEST_INCLUDE = defaultInclude;
 export const TEST_EXCLUDE = defaultExclude;
