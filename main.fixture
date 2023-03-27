@@ -1,0 +1,8 @@
+{
+	"features": ["functions-date"],
+	"setup": "make setup",
+	"buildConfig": {
+		"buildCommand": "npm run build",
+		"buildOutputDirectory": "build"
+	}
+}
