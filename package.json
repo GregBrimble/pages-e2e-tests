@@ -15,7 +15,8 @@
 		"fix": "npx concurrently -g -n fix: npm:*:fix",
 		"schemas:generate": "node --loader tsm scripts/generate-schemas.ts",
 		"generate": "npx concurrently -g -n generate: npm:*:generate",
-		"start": "./bin/run-test.js"
+		"start": "./bin/run-test.js",
+		"pre-commit": "npm run generate && git add schemas/* && npx lint-staged"
 	},
 	"dependencies": {
 		"@vitest/ui": "^0.29.2",
@@ -45,7 +46,6 @@
 		"node": "18.15.0"
 	},
 	"lint-staged": {
-		"scripts/src/schemas.ts": "npm run schemas:generate",
-		"*.{js,ts,jsx,tsx}": "npm run prettier -- --fix"
+		"*": "npm run prettier -- --write"
 	}
 }
