@@ -190,7 +190,14 @@ export const fixturesSchema = z
 			z
 				.string()
 				.describe(
-					"The command to run ahead of time in order to configure this fixture project."
+					"A command to run ahead of time in order to configure this fixture project."
+				)
+		),
+		localSetup: z.optional(
+			z
+				.string()
+				.describe(
+					"A command to run ahead of building locally that's usually handled by the Pages build image."
 				)
 		),
 		buildConfig: z
@@ -208,6 +215,7 @@ export const fixturesSchema = z
 					.default("")
 					.describe("The root directory of the project."),
 			})
+			.default({})
 			.describe("The build configuration to use when building the project."),
 		deploymentConfig: z
 			.object({
