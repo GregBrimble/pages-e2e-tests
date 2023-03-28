@@ -1,10 +1,9 @@
 import { cp, mkdir, readFile } from "fs/promises";
 import { globby } from "globby";
-import { tmpdir } from "os";
 import { join, relative } from "path";
 import shellac from "shellac";
 import stripJsonComments from "strip-json-comments";
-import { FIXTURES_PATH } from "./config";
+import { FIXTURES_PATH, WORKSPACES_PATH } from "./config";
 import { Logger } from "./logger";
 import { fixturesSchema } from "./schemas";
 
@@ -15,11 +14,11 @@ export const setUpFixture = async ({
 	logger: Logger;
 	fixture: string;
 }) => {
-	const directory = join(tmpdir(), Math.random().toString(36).slice(2));
+	const directory = join(WORKSPACES_PATH, Math.random().toString(36).slice(2));
 	const fixtureDirectory = join(FIXTURES_PATH, fixture);
 
 	logger.info(`Making workspace directory ${directory}...`);
-	await mkdir(directory);
+	await mkdir(directory, { recursive: true });
 	logger.info(`Done.`);
 
 	logger.log(`Copying fixture from ${fixtureDirectory} to ${directory}...`);
