@@ -129,3 +129,4 @@ export const FEATURES_PATH = join(DIRNAME, "features");
 export const GLOBAL_TESTS_PATH = join(DIRNAME, "__tests__");
 export const ASSETS_PATH = join(DIRNAME, "assets");
 export const TESTS_PATH = join(DIRNAME, "test-workspaces");
+export const WORKSPACES_PATH = join(DIRNAME, "workspaces");
