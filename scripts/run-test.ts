@@ -13,7 +13,6 @@ import { setUpFixture } from "./src/setUpFixture";
 import { TeardownService } from "./src/teardownService";
 import { uploadTestResults } from "./src/uploadTestResults";
 
-const ENVIRONMENT = Environment.Production;
 const TRIGGER = Trigger.GitHub;
 
 let teardownService: TeardownService | undefined = undefined;
@@ -97,7 +96,7 @@ const main = async () => {
 We're starting at ${startTimestamp}, and we're going to run the following fixtures: ${fixtures.join(
 			", "
 		)}.
-This is going to be evaluated on ${ENVIRONMENT}, using ${TRIGGER} as the trigger.`
+This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger.`
 	);
 
 	await installWranglerVersion({

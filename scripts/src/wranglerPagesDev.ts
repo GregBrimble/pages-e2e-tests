@@ -28,6 +28,7 @@ export const wranglerPagesDev = async ({
 		{
 			stdio: ["pipe", "pipe", "pipe", "ipc"],
 			cwd: rootDirectory,
+			execArgv: [],
 		}
 	).on("message", (message) => {
 		const parsedMessage = JSON.parse(message.toString());
@@ -42,11 +43,11 @@ export const wranglerPagesDev = async ({
 	});
 
 	wranglerProcess.stdout?.on("data", (chunk) => {
-		logger.debug(chunk);
+		logger.debug(chunk.toString());
 	});
 
 	wranglerProcess.stderr?.on("data", (chunk) => {
-		logger.debug(chunk);
+		logger.debug(chunk.toString());
 	});
 
 	return promise;

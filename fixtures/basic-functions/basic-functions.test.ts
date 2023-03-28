@@ -13,4 +13,10 @@ describe("simple-html", () => {
 			"
 		`);
 	});
+
+	it("surfaces environment variables on `env`", async ({ expect }) => {
+		const response = await fetch(`${DEPLOYMENT_URL}/env`);
+		const { env } = await response.json();
+		expect(env.FOO).toEqual("BAR");
+	});
 });

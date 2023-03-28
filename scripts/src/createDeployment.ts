@@ -1,4 +1,5 @@
 import assert, { ok } from "assert";
+import { join } from "path";
 import shellac from "shellac";
 import {
 	DEPLOYMENT_CHECK_API_FAILURES_THRESHOLD,
@@ -21,6 +22,7 @@ import { FixtureConfig } from "./schemas";
 import { FeaturesConfig } from "./setUpFeatures";
 import { TeardownService } from "./teardownService";
 import { responseIsNotProvisioned, transformResponseIntoError } from "./utils";
+import { wranglerPagesDev } from "./wranglerPagesDev";
 
 interface CreateDeployHookResponse {
 	result: {
@@ -107,8 +109,136 @@ export const createDeployment = async ({
 	featuresConfig: FeaturesConfig;
 	directory: string;
 }) => {
+	const gitBranchName = `${fixture}-${timestamp}`;
+	const gitCommitMessage = `${fixture} @ ${timestamp}`;
+
+	logger.log(
+		`Creating Git repo in ${directory}, hecking out orphan branch ${gitBranchName}, adding files, committing, and cleaning...`
+	);
+	await shellac.in(directory)`
+		$ git init .
+		stdout >> ${logger.info}
+		$ git checkout --orphan ${gitBranchName}
+		stdout >> ${logger.info}
+		$ git add .
+		stdout >> ${logger.info}
+		$ git -c user.name="${GIT_USERNAME}" -c user.email="${GIT_EMAIL_ADDRESS}" commit -m "${gitCommitMessage}" --author="${GIT_USERNAME} <${GIT_EMAIL_ADDRESS}> --date=${timestamp}"
+		stdout >> ${logger.info}
+		$ git clean -xfd .
+		stdout >> ${logger.info}
+	`;
+	const combinedDeploymentConfig: FeaturesConfig["deploymentConfig"] = {
+		environmentVariables: {
+			...fixtureConfig.deploymentConfig.environmentVariables,
+			...featuresConfig.deploymentConfig.environmentVariables,
+		},
+		d1Databases: {
+			...fixtureConfig.deploymentConfig.d1Databases,
+			...featuresConfig.deploymentConfig.d1Databases,
+		},
+		durableObjectNamespaces: {
+			...fixtureConfig.deploymentConfig.durableObjectNamespaces,
+			...featuresConfig.deploymentConfig.durableObjectNamespaces,
+		},
+		kvNamespaces: {
+			...fixtureConfig.deploymentConfig.kvNamespaces,
+			...featuresConfig.deploymentConfig.kvNamespaces,
+		},
+		r2Buckets: {
+			...fixtureConfig.deploymentConfig.r2Buckets,
+			...featuresConfig.deploymentConfig.r2Buckets,
+		},
+		services: {
+			...fixtureConfig.deploymentConfig.services,
+			...featuresConfig.deploymentConfig.services,
+		},
+		queueProducers: {
+			...fixtureConfig.deploymentConfig.queueProducers,
+			...featuresConfig.deploymentConfig.queueProducers,
+		},
+		analyticsEngineDatasets: {
+			...fixtureConfig.deploymentConfig.analyticsEngineDatasets,
+			...featuresConfig.deploymentConfig.analyticsEngineDatasets,
+		},
+	};
+
 	if (environment === Environment.Local) {
-		// TODO
+		logger.log("Building project...");
+		const rootDirectory = join(
+			directory,
+			fixtureConfig.buildConfig.rootDirectory
+		);
+		if (fixtureConfig.localSetup) {
+			logger.info(
+				`Running local setup command: \`${fixtureConfig.localSetup}\`...`
+			);
+			await shellac.in(rootDirectory)`
+				$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
+				$ ${fixtureConfig.localSetup}
+				stdout >> ${logger.info}
+			`;
+		}
+		if (fixtureConfig.buildConfig.buildCommand) {
+			logger.info(
+				`Running build command: \`${fixtureConfig.buildConfig.buildCommand}\`...`
+			);
+			await shellac.in(rootDirectory)`
+				$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
+				$ ${fixtureConfig.buildConfig.buildCommand}
+				stdout >> ${logger.info}
+			`;
+		} else {
+			logger.info("No build command specified, continuing...");
+		}
+		logger.info("Done.");
+
+		logger.log("Starting Wrangler...");
+		if (
+			Object.keys({
+				...combinedDeploymentConfig.durableObjectNamespaces,
+				...combinedDeploymentConfig.services,
+				...combinedDeploymentConfig.queueProducers,
+				...combinedDeploymentConfig.analyticsEngineDatasets,
+			}).length > 0
+		) {
+			logger.warn(
+				"Wrangler does not yet support Durable Objects, Services, Queue Producers, or Analytics Engine Datasets in local mode."
+			);
+		}
+		const url = await wranglerPagesDev({
+			logger,
+			teardownService,
+			rootDirectory,
+			buildOutputDirectory: join(
+				rootDirectory,
+				fixtureConfig.buildConfig.buildOutputDirectory
+			),
+			arguments: [
+				`--compatibility-date=${fixtureConfig.deploymentConfig.compatibilityDate}`,
+				...fixtureConfig.deploymentConfig.compatibilityFlags.map(
+					(compatibilityFlag) => `--compatibility-flag=${compatibilityFlag}`
+				),
+				...Object.entries(combinedDeploymentConfig.environmentVariables).map(
+					([name, value]) => `--binding=${name}=${value}`
+				),
+				...Object.keys(combinedDeploymentConfig.d1Databases).map(
+					(name) => `--d1=${name}`
+				),
+				// TODO: Durable Object namespaces
+				...Object.keys(combinedDeploymentConfig.kvNamespaces).map(
+					(name) => `--kv=${name}`
+				),
+				...Object.keys(combinedDeploymentConfig.r2Buckets).map(
+					(name) => `--r2=${name}`
+				),
+				// TODO: Services
+				// TODO: Queue Producers
+				// TODO: Analytics Engine datasets
+			],
+		});
+		logger.info("Done.", url);
+
+		return { url };
 	} else {
 		const host = HOSTS[environment];
 		ok(host);
@@ -119,21 +249,9 @@ export const createDeployment = async ({
 		if (trigger !== Trigger.DirectUpload) {
 			ok(pagesProject.GIT_REPO);
 
-			const gitBranchName = `${fixture}-${timestamp}`;
-			const gitCommitMessage = `${fixture} @ ${timestamp}`;
-			logger.log(
-				`Creating Git repo in ${directory}, configuring ${pagesProject.GIT_REPO} remote, checking out orphan branch ${gitBranchName}, adding files, committing, and pushing...`
-			);
+			logger.log(`Configuring ${pagesProject.GIT_REPO} remote, and pushing...`);
 			await shellac.in(directory)`
-				$ git init .
-				stdout >> ${logger.info}
 				$ git remote add origin ${pagesProject.GIT_REPO}
-				stdout >> ${logger.info}
-				$ git checkout --orphan ${gitBranchName}
-				stdout >> ${logger.info}
-				$ git add .
-				stdout >> ${logger.info}
-				$ git -c user.name="${GIT_USERNAME}" -c user.email="${GIT_EMAIL_ADDRESS}" commit -m "${gitCommitMessage}" --author="${GIT_USERNAME} <${GIT_EMAIL_ADDRESS}> --date=${timestamp}"
 				stdout >> ${logger.info}
 				$ git push -f origin ${gitBranchName}
 				stdout >> ${logger.info}
@@ -404,40 +522,6 @@ export const createDeployment = async ({
 		logger.info("Done.", initialProject);
 
 		logger.info("Computing required changes...");
-		const combinedDeploymentConfig: FeaturesConfig["deploymentConfig"] = {
-			environmentVariables: {
-				...fixtureConfig.deploymentConfig.environmentVariables,
-				...featuresConfig.deploymentConfig.environmentVariables,
-			},
-			d1Databases: {
-				...fixtureConfig.deploymentConfig.d1Databases,
-				...featuresConfig.deploymentConfig.d1Databases,
-			},
-			durableObjectNamespaces: {
-				...fixtureConfig.deploymentConfig.durableObjectNamespaces,
-				...featuresConfig.deploymentConfig.durableObjectNamespaces,
-			},
-			kvNamespaces: {
-				...fixtureConfig.deploymentConfig.kvNamespaces,
-				...featuresConfig.deploymentConfig.kvNamespaces,
-			},
-			r2Buckets: {
-				...fixtureConfig.deploymentConfig.r2Buckets,
-				...featuresConfig.deploymentConfig.r2Buckets,
-			},
-			services: {
-				...fixtureConfig.deploymentConfig.services,
-				...featuresConfig.deploymentConfig.services,
-			},
-			queueProducers: {
-				...fixtureConfig.deploymentConfig.queueProducers,
-				...featuresConfig.deploymentConfig.queueProducers,
-			},
-			analyticsEngineDatasets: {
-				...fixtureConfig.deploymentConfig.analyticsEngineDatasets,
-				...featuresConfig.deploymentConfig.analyticsEngineDatasets,
-			},
-		};
 		const updatePayload: Project = {
 			build_config: {
 				build_command: fixtureConfig.buildConfig.buildCommand || "",

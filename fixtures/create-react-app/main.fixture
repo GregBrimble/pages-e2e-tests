@@ -1,6 +1,7 @@
 {
 	"features": ["functions-date"],
 	"setup": "make setup",
+	"localSetup": "npm install",
 	"buildConfig": {
 		"buildCommand": "npm run build",
 		"buildOutputDirectory": "build"
