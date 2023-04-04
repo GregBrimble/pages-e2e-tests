@@ -6,7 +6,8 @@ import { argumentParser } from "zodcli";
 import { Environment, FIXTURES_PATH, Trigger } from "./src/config";
 import { createDeployment } from "./src/createDeployment";
 import { installWranglerVersion } from "./src/installWranglerVersion";
-import { Logger, LogLevel } from "./src/logger";
+import { Logger, LogLevel } from "./src/logger/logger";
+import { pagesLogo } from "./src/logger/pages-ascii-logo";
 import { runTests } from "./src/runTests";
 import { Feature, setUpFeatures } from "./src/setUpFeatures";
 import { setUpFixture } from "./src/setUpFixture";
@@ -90,6 +91,8 @@ const main = async () => {
 
 			return fixturesInclude.includes(name) && !fixturesExclude.includes(name);
 		});
+
+	logger.log(pagesLogo);
 
 	logger.log(
 		`Welcome to the Pages e2e test runner!

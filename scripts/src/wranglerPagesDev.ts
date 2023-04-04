@@ -1,7 +1,7 @@
 import { fork } from "child_process";
 import { join } from "path";
 import { DIRNAME } from "./config";
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 import { TeardownService } from "./teardownService";
 
 export const wranglerPagesDev = async ({

@@ -1,4 +1,4 @@
-import type { Logger } from "./logger";
+import type { Logger } from "./logger/logger";
 
 type TeardownFunction = { name: string; function: () => Promise<void> | void };
 

@@ -6,7 +6,7 @@ import {
 	TEST_RESULTS_PAGES_PROJECT,
 	TEST_RESULTS_PATH,
 } from "./config";
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 
 export const uploadTestResults = async ({
 	logger,

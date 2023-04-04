@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@vitest/ui": "^0.29.2",
+		"chalk": "^5.2.0",
 		"dotenv": "^16.0.3",
 		"esbuild": "^0.17.11",
 		"globby": "^13.1.3",

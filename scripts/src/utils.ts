@@ -1,4 +1,4 @@
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 
 export const transformResponseIntoError = async (
 	response: Response,

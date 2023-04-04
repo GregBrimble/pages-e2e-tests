@@ -16,7 +16,7 @@ import {
 	PROVISIONER_TIMEOUT,
 	Trigger,
 } from "./config";
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 import { acquireMutex, releaseMutex } from "./mutexes";
 import { FixtureConfig } from "./schemas";
 import { FeaturesConfig } from "./setUpFeatures";

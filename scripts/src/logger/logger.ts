@@ -1,3 +1,5 @@
+import { formatLabel, formatMessage } from "./messageFormatter";
+
 export enum LogLevel {
 	debug = 0,
 	info = 1,
@@ -5,6 +7,7 @@ export enum LogLevel {
 	warn = 3,
 	error = 4,
 }
+export type LoggerLevel = keyof typeof LogLevel;
 
 export class Logger {
 	label: string;
@@ -59,21 +62,34 @@ export class Logger {
 		this.children.forEach((child) => child.flush());
 	}
 
-	private doLog(level: LogLevel, ...args: any[]) {
-		if (level >= this.level) {
-			if (this.collect) {
-				this.messages.push([level, ...args]);
-			} else {
-				console[LogLevel[level]](
-					...[this.label ? [this.label, ...args] : [...args]].flat(1)
-				);
-			}
-		}
-	}
-
 	debug = (...args: any[]) => this.doLog(LogLevel.debug, ...args);
 	info = (...args: any[]) => this.doLog(LogLevel.info, ...args);
 	log = (...args: any[]) => this.doLog(LogLevel.log, ...args);
 	warn = (...args: any[]) => this.doLog(LogLevel.warn, ...args);
 	error = (...args: any[]) => this.doLog(LogLevel.error, ...args);
+
+	private doLog(level: LogLevel, ...args: any[]) {
+		if (level >= this.level) {
+			if (this.collect) {
+				this.messages.push([level, ...args]);
+			} else {
+				let message = "";
+				const logLevel = LogLevel[level];
+
+				console.log();
+
+				if (this.label) {
+					message = formatLabel(this.label);
+				} else {
+					// is this the right assumption to make here?
+					message = [...args].flat(1).shift();
+				}
+				console[logLevel](formatMessage(level, message), ...args);
+
+				// console[LogLevel[level]](
+				// 	...[this.label ? [this.label, ...args] : [...args]].flat(1)
+				// );
+			}
+		}
+	}
 }

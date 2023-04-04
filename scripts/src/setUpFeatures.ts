@@ -2,7 +2,7 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import shellac from "shellac";
 import stripJsonComments from "strip-json-comments";
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 import { FeatureConfig, featuresSchema } from "./schemas";
 
 export interface Feature {

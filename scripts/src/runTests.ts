@@ -12,7 +12,7 @@ import {
 	TEST_INCLUDE,
 	TEST_RESULTS_PATH,
 } from "./config";
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 import { Feature } from "./setUpFeatures";
 
 export const runTests = async ({

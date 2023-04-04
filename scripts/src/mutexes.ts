@@ -3,7 +3,7 @@ import {
 	MUTEX_CONSIDERED_STALE_TIMEOUT,
 	MUTEX_TIMEOUT,
 } from "./config";
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 import { transformResponseIntoError } from "./utils";
 
 interface Mutex {

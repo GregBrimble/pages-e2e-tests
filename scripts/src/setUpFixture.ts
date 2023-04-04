@@ -4,7 +4,7 @@ import { join, relative } from "path";
 import shellac from "shellac";
 import stripJsonComments from "strip-json-comments";
 import { FIXTURES_PATH, WORKSPACES_PATH } from "./config";
-import { Logger } from "./logger";
+import { Logger } from "./logger/logger";
 import { fixturesSchema } from "./schemas";
 
 export const setUpFixture = async ({
