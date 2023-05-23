@@ -8,7 +8,7 @@ export const DIRNAME = fileURLToPath(new URL("../../", import.meta.url));
 
 dotenv.config({ path: join(DIRNAME, ".env") });
 
-export const GIT_REPO = "git@github.com:GregBrimble/pages-e2e-tests.git";
+export const GIT_REPO = process.env.GITHUB_REPO;
 export const GIT_USERNAME = "Pages e2e Tests Bot";
 export const GIT_EMAIL_ADDRESS = "cloudflare-pages-team@cloudflare.com";
 
@@ -20,9 +20,9 @@ export interface PagesProjectCredentials {
 }
 
 export const TEST_RESULTS_PAGES_PROJECT: PagesProjectCredentials = {
-	CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+	CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 	CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-	PROJECT_NAME: "pages-e2e-tests-tmp",
+	PROJECT_NAME: process.env.PROJECT_NAME,
 };
 
 export enum Environment {
@@ -40,46 +40,46 @@ export enum Trigger {
 export const PAGES_PROJECTS = {
 	[Environment.Production]: {
 		[Trigger.GitHub]: {
-			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			PROJECT_NAME: "pages-e2e-tests-tmp",
-			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+			PROJECT_NAME: process.env.PROJECT_NAME,
+			GIT_REPO: process.env.GITHUB_REPO,
 		},
 		[Trigger.GitLab]: {
 			// TODO
-			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			PROJECT_NAME: "pages-e2e-tests-tmp",
-			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+			PROJECT_NAME: process.env.PROJECT_NAME,
+			GIT_REPO: process.env.GITLAB_REPO,
 		},
 		[Trigger.DirectUpload]: {
 			// TODO
-			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			PROJECT_NAME: "pages-e2e-tests-tmp",
-			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+			PROJECT_NAME: process.env.PROJECT_NAME,
+			GIT_REPO: process.env.GITHUB_REPO,
 		},
 	},
 	[Environment.Staging]: {
 		[Trigger.GitHub]: {
-			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			PROJECT_NAME: "pages-e2e-tests-tmp",
-			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+			PROJECT_NAME: process.env.PROJECT_NAME,
+			GIT_REPO: process.env.GITHUB_REPO,
 		},
 		[Trigger.GitLab]: {
 			// TODO
-			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			PROJECT_NAME: "pages-e2e-tests-tmp",
-			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+			PROJECT_NAME: process.env.PROJECT_NAME,
+			GIT_REPO: process.env.GITLAB_REPO,
 		},
 		[Trigger.DirectUpload]: {
 			// TODO
-			CLOUDFLARE_ACCOUNT_ID: "5a883b414d4090a1442b20361f3c43a9",
+			CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
 			CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-			PROJECT_NAME: "pages-e2e-tests-tmp",
-			GIT_REPO: "git@github.com:GregBrimble/pages-e2e-tests.git",
+			PROJECT_NAME: process.env.PROJECT_NAME,
+			GIT_REPO: process.env.GITHUB_REPO,
 		},
 	},
 } satisfies Record<
