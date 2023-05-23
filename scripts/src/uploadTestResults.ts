@@ -22,7 +22,7 @@ export const uploadTestResults = async ({
 		$ cp -r ${TEST_RESULTS_PATH} ${join(TEST_RESULTS_PATH, "__vitest__")}
 		stdout >> ${logger.info}
 	`;
-	const testResultsDeployment = await unstable_pages.publish({
+	const testResultsDeployment = await unstable_pages.deploy({
 		directory: TEST_RESULTS_PATH,
 		accountId: TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_ACCOUNT_ID,
 		projectName: TEST_RESULTS_PAGES_PROJECT.PROJECT_NAME,
