@@ -199,6 +199,10 @@ dist
 
 /test-workspaces
 
+### TEST RESULTS ###
+
+/test-results
+
 ### FIXTURES ###
 
 /fixtures/create-react-app/**/*

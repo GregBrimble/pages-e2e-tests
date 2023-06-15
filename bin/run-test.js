@@ -10,6 +10,7 @@ let extraCACerts =
 spawn(
 	process.execPath,
 	[
+		"--experimental-import-meta-resolve",
 		"--loader",
 		"tsm",
 		resolve(join(__dirname, "../scripts/run-test.ts")),

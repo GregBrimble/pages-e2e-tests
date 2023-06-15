@@ -1,6 +1,6 @@
 {
-	"name": "vitest-environment-playwright",
-	"private": true,
+	"name": "vitest-environment-cfpreview-playwright",
+	"version": "0.0.1",
 	"main": "index.ts",
 	"dependencies": {
 		"playwright": "^1.31.2"

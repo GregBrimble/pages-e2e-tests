@@ -4,9 +4,10 @@ import { fileURLToPath } from "url";
 import { defaultExclude, defaultInclude } from "vitest/config";
 import { ONE_MINUTE, ONE_SECOND } from "./utils";
 
+export const CWD = process.cwd();
 export const DIRNAME = fileURLToPath(new URL("../../", import.meta.url));
 
-dotenv.config({ path: join(DIRNAME, ".env") });
+dotenv.config({ path: join(CWD, ".env") });
 
 export const GIT_REPO = process.env.GITHUB_REPO;
 export const GIT_USERNAME = "Pages e2e Tests Bot";
@@ -106,7 +107,7 @@ export const HOSTS = {
 export const TEST_INCLUDE = defaultInclude;
 export const TEST_EXCLUDE = defaultExclude;
 export const TEST_RESULTS_BRANCH_NAME = "test-results";
-export const TEST_RESULTS_PATH = join(DIRNAME, "dist");
+export const TEST_RESULTS_PATH = join(CWD, "dist");
 
 export const MUTEX_TIMEOUT = 10 * ONE_MINUTE;
 export const MUTEX_CONSIDERED_STALE_TIMEOUT = ONE_MINUTE;
@@ -124,9 +125,9 @@ export const PROVISIONER_TIMEOUT = 30 * ONE_SECOND;
 // How frequently we should poll the deployment URL to check for provisioner completion
 export const PROVISIONER_CHECK_INTERVAL = 5 * ONE_SECOND;
 
-export const FIXTURES_PATH = join(DIRNAME, "fixtures");
-export const FEATURES_PATH = join(DIRNAME, "features");
-export const GLOBAL_TESTS_PATH = join(DIRNAME, "__tests__");
-export const ASSETS_PATH = join(DIRNAME, "assets");
-export const TESTS_PATH = join(DIRNAME, "test-workspaces");
-export const WORKSPACES_PATH = join(DIRNAME, "workspaces");
+export const FIXTURES_PATH = join(CWD, "fixtures");
+export const FEATURES_PATH = join(CWD, "features");
+export const GLOBAL_TESTS_PATH = join(CWD, "__tests__");
+export const ASSETS_PATH = join(CWD, "assets");
+export const TESTS_PATH = join(CWD, "test-workspaces");
+export const WORKSPACES_PATH = join(CWD, "workspaces");

@@ -1,5 +1,5 @@
 import { build, BuildOptions } from "esbuild";
-import { rm } from "fs/promises";
+import { mkdir, rm } from "fs/promises";
 import { globby } from "globby";
 import { join } from "path";
 import { startVitest } from "vitest/node";
@@ -90,6 +90,7 @@ export const runTests = async ({
 	logger.log("Running tests...");
 	await rm(TEST_RESULTS_PATH, { recursive: true, force: true });
 	const oldCwd = process.cwd();
+	await mkdir(TESTS_PATH, { recursive: true });
 	process.chdir(TESTS_PATH);
 	const vitest = await startVitest("test", [], {
 		run: true,
@@ -99,7 +100,7 @@ export const runTests = async ({
 		outputFile: {
 			html: join(TEST_RESULTS_PATH, "index.html"),
 		},
-		environment: "playwright",
+		environment: "cfpreview-playwright",
 	});
 	await vitest.close();
 	process.chdir(oldCwd);

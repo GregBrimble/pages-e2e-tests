@@ -1,6 +1,5 @@
 import { fork } from "child_process";
-import { join } from "path";
-import { DIRNAME } from "./config";
+import { fileURLToPath } from "url";
 import { Logger } from "./logger";
 import { TeardownService } from "./teardownService";
 
@@ -23,7 +22,9 @@ export const wranglerPagesDev = async ({
 	});
 
 	const wranglerProcess = fork(
-		join(DIRNAME, "node_modules/.bin/wrangler"),
+		fileURLToPath(
+			new URL("../bin/wrangler.js", await import.meta.resolve("wrangler"))
+		),
 		["pages", "dev", buildOutputDirectory, "--port=0", ...args],
 		{
 			stdio: ["pipe", "pipe", "pipe", "ipc"],
