@@ -1,4 +1,9 @@
 {
-	"extends": "./tsconfig-base.json",
-	"include": ["./test-types.d.ts", "./**/*.test.ts"]
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"module": "ESNext",
+		"moduleResolution": "node",
+		"noEmit": true,
+		"target": "ESNext"
+	}
 }

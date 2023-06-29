@@ -11,7 +11,6 @@ interface Mutex {
 	key: string;
 	id: string;
 	timestamp: string;
-	foo: string;
 }
 
 interface MutexResponse {

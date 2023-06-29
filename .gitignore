@@ -193,19 +193,12 @@ dist
 
 ### WORKSPACES ###
 
-/workspaces
-
-### TEST WORKSPACES ###
-
-/test-workspaces
-
-### TEST RESULTS ###
-
-/test-results
+/pages-e2e/workspaces
+/pages-e2e/test-workspaces
 
 ### FIXTURES ###
 
-/fixtures/create-react-app/**/*
-!/fixtures/create-react-app/.gitignore
+/pages-e2e/fixtures/create-react-app/**/*
+!/pages-e2e/fixtures/create-react-app/.gitignore
 
-!/fixtures/*/main.fixture
+!/pages-e2e/fixtures/*/main.fixture

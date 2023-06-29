@@ -1,6 +1,6 @@
 {
 	"name": "@cfpreview/pages-e2e-test-runner-cli",
-	"version": "0.0.8",
+	"version": "0.0.11",
 	"bin": "./bin/run-test.js",
 	"files": [
 		"./asssets",
@@ -10,7 +10,7 @@
 		"./scripts"
 	],
 	"workspaces": [
-		"./features/*",
+		"./pages-e2e/features/*",
 		"./vitest-environment-cfpreview-playwright"
 	],
 	"scripts": {

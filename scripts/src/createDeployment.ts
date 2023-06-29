@@ -8,12 +8,12 @@ import {
 	Environment,
 	GIT_EMAIL_ADDRESS,
 	GIT_USERNAME,
-	Host,
 	HOSTS,
-	PagesProjectCredentials,
+	Host,
 	PAGES_PROJECTS,
 	PROVISIONER_CHECK_INTERVAL,
 	PROVISIONER_TIMEOUT,
+	PagesProjectCredentials,
 	Trigger,
 } from "./config";
 import { Logger } from "./logger";

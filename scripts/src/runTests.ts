@@ -7,10 +7,10 @@ import {
 	FEATURES_PATH,
 	FIXTURES_PATH,
 	GLOBAL_TESTS_PATH,
-	TESTS_PATH,
 	TEST_EXCLUDE,
 	TEST_INCLUDE,
 	TEST_RESULTS_PATH,
+	TESTS_PATH,
 } from "./config";
 import { Logger } from "./logger";
 import { Feature } from "./setUpFeatures";

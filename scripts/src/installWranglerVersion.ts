@@ -27,7 +27,7 @@ export const installWranglerVersion = async ({
 		function: async () => {
 			await shellac.in(DIRNAME)`
 				$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
-				$ npm install
+				$ npm install --ignore-scripts
 				stdout >> ${logger.info}
 		`;
 		},
