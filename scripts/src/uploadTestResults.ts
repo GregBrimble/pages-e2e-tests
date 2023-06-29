@@ -19,7 +19,7 @@ export const uploadTestResults = async ({
 	// fs.cp doesn't like you copying into yourself, but the proper cp command is cool with it.
 	// We have to do this because @vitest/ui tries to serve from a base of `/__vitest__`.
 	await shellac`
-		$ cp -r ${TEST_RESULTS_PATH} ${join(TEST_RESULTS_PATH, "__vitest__")}
+		$ rsync -Rr ${TEST_RESULTS_PATH} ${join(TEST_RESULTS_PATH, "__vitest__")}
 		stdout >> ${logger.info}
 	`;
 	const testResultsDeployment = await unstable_pages.deploy({

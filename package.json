@@ -1,6 +1,6 @@
 {
 	"name": "@cfpreview/pages-e2e-test-runner-cli",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"bin": "./bin/run-test.js",
 	"files": [
 		"./asssets",
