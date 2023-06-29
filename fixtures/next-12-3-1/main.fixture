@@ -4,5 +4,8 @@
 	"buildConfig": {
 		"buildCommand": "npx @cloudflare/next-on-pages --experimental-minify",
 		"buildOutputDirectory": ".vercel/output/static"
+	},
+	"deploymentConfig": {
+		"compatibilityFlags": ["nodejs_compat"]
 	}
 }

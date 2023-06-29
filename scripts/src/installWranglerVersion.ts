@@ -1,5 +1,5 @@
 import shellac from "shellac";
-import { CWD } from "./config";
+import { DIRNAME } from "./config";
 import { Logger } from "./logger";
 import { TeardownService } from "./teardownService";
 
@@ -13,7 +13,7 @@ export const installWranglerVersion = async ({
 	version: string;
 }) => {
 	logger.log(`Installing wrangler@${version}...`);
-	await shellac.in(CWD)`
+	await shellac.in(DIRNAME)`
 		$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
 		$ npm install --no-save wrangler@${version}
 		stdout >> ${logger.info}
@@ -25,7 +25,7 @@ export const installWranglerVersion = async ({
 	teardownService.register({
 		name: "Reinstall dependencies",
 		function: async () => {
-			await shellac.in(CWD)`
+			await shellac.in(DIRNAME)`
 				$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
 				$ npm install
 				stdout >> ${logger.info}

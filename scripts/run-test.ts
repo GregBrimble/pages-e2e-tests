@@ -6,7 +6,7 @@ import { argumentParser } from "zodcli";
 import { Environment, FIXTURES_PATH, Trigger } from "./src/config";
 import { createDeployment } from "./src/createDeployment";
 import { installWranglerVersion } from "./src/installWranglerVersion";
-import { Logger, LogLevel } from "./src/logger";
+import { LogLevel, Logger } from "./src/logger";
 import { runTests } from "./src/runTests";
 import { Feature, setUpFeatures } from "./src/setUpFeatures";
 import { setUpFixture } from "./src/setUpFixture";
