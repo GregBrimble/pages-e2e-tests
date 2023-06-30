@@ -1,6 +1,6 @@
 {
 	"name": "@cfpreview/pages-e2e-test-runner-cli",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"bin": "./bin/run-test.js",
 	"files": [
 		"./asssets",
@@ -32,6 +32,7 @@
 		"globby": "^13.2.0",
 		"shellac": "^0.8.0",
 		"strip-json-comments": "^5.0.0",
+		"vitest-github-actions-reporter": "^0.10.0",
 		"wrangler": "0.0.0-09f317d4",
 		"zod": "^3.21.4",
 		"zodcli": "^0.0.4"
@@ -56,7 +57,7 @@
 		"vitest-environment-cfpreview-playwright": "*"
 	},
 	"volta": {
-		"node": "18.15.0"
+		"node": "16.20.1"
 	},
 	"lint-staged": {
 		"*": "npm run prettier -- --write"

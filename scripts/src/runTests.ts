@@ -2,6 +2,7 @@ import { build, BuildOptions } from "esbuild";
 import { mkdir, rm } from "fs/promises";
 import { globby } from "globby";
 import { join } from "path";
+import GitHubActionsReporter from "vitest-github-actions-reporter";
 import { startVitest } from "vitest/node";
 import {
 	FEATURES_PATH,
@@ -48,7 +49,7 @@ export const runTests = async ({
 					build({
 						...testBuildOptions,
 						entryPoints,
-						outdir: join(TESTS_PATH, fixture, " ", "features"),
+						outdir: join(TESTS_PATH, fixture, "features"),
 						outbase: join(FEATURES_PATH),
 						define: {
 							DEPLOYMENT_URL: JSON.stringify(url),
@@ -62,7 +63,7 @@ export const runTests = async ({
 					build({
 						...testBuildOptions,
 						entryPoints,
-						outdir: join(TESTS_PATH, fixture, " ", "__tests__"),
+						outdir: join(TESTS_PATH, fixture, "__tests__"),
 						outbase: join(GLOBAL_TESTS_PATH),
 						define: {
 							DEPLOYMENT_URL: JSON.stringify(url),
@@ -76,7 +77,7 @@ export const runTests = async ({
 					build({
 						...testBuildOptions,
 						entryPoints,
-						outdir: join(TESTS_PATH, fixture, " "),
+						outdir: join(TESTS_PATH, fixture),
 						outbase: join(FIXTURES_PATH, fixture),
 						define: {
 							DEPLOYMENT_URL: JSON.stringify(url),
@@ -97,7 +98,13 @@ export const runTests = async ({
 		run: true,
 		include: TEST_INCLUDE,
 		exclude: TEST_EXCLUDE,
-		reporters: ["basic", "html"],
+		reporters: [
+			"basic",
+			"html",
+			...[
+				process.env.GITHUB_ACTIONS ? new GitHubActionsReporter() : undefined,
+			].filter(Boolean),
+		],
 		outputFile: {
 			html: join(TEST_RESULTS_PATH, "index.html"),
 		},
