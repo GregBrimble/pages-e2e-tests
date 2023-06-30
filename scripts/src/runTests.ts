@@ -1,4 +1,5 @@
 import { build, BuildOptions } from "esbuild";
+import { readFileSync } from "fs";
 import { mkdir, rm } from "fs/promises";
 import { globby } from "globby";
 import { join } from "path";
@@ -100,20 +101,24 @@ export const runTests = async ({
 		exclude: TEST_EXCLUDE,
 		reporters: [
 			"basic",
+			"json",
 			"html",
 			...[
 				process.env.GITHUB_ACTIONS ? new GitHubActionsReporter() : undefined,
 			].filter(Boolean),
 		],
 		outputFile: {
+			json: join(TEST_RESULTS_PATH, "results.json"),
 			html: join(TEST_RESULTS_PATH, "index.html"),
 		},
 		environment: "cfpreview-playwright",
 	});
 	await vitest.close();
-	const errors = vitest.state.errorsSet.size > 0;
+	const { success } = JSON.parse(
+		readFileSync(join(TEST_RESULTS_PATH, "results.json"), "utf-8")
+	);
 	process.chdir(oldCwd);
 	logger.info("Done.");
 
-	return !errors;
+	return success;
 };
