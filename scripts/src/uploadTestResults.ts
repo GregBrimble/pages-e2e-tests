@@ -1,3 +1,4 @@
+import { writeFile } from "fs/promises";
 import { join } from "path";
 import shellac from "shellac";
 import { unstable_pages } from "wrangler";
@@ -30,6 +31,13 @@ export const uploadTestResults = async ({
 		commitMessage: gitCommitMessage,
 	});
 	logger.log("Done.", testResultsDeployment.url);
+
+	if (process.env.GITHUB_STEP_SUMMARY) {
+		await writeFile(
+			process.env.GITHUB_STEP_SUMMARY,
+			`[View report](${testResultsDeployment.url})`
+		);
+	}
 
 	return { url: testResultsDeployment.url };
 };

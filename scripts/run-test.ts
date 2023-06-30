@@ -139,10 +139,11 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 		)
 	);
 
-	success = await runTests({
+	const testResults = await runTests({
 		logger,
 		fixtures: deployedFixtures,
 	});
+	success = testResults.success;
 
 	await uploadTestResults({
 		logger,

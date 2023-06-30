@@ -1,6 +1,5 @@
 import { build, BuildOptions } from "esbuild";
-import { readFileSync } from "fs";
-import { mkdir, rm } from "fs/promises";
+import { mkdir, readFile, rm } from "fs/promises";
 import { globby } from "globby";
 import { join } from "path";
 import GitHubActionsReporter from "vitest-github-actions-reporter";
@@ -115,10 +114,10 @@ export const runTests = async ({
 	});
 	await vitest.close();
 	const { success } = JSON.parse(
-		readFileSync(join(TEST_RESULTS_PATH, "results.json"), "utf-8")
+		await readFile(join(TEST_RESULTS_PATH, "results.json"), "utf-8")
 	);
 	process.chdir(oldCwd);
 	logger.info("Done.");
 
-	return success;
+	return { success };
 };
