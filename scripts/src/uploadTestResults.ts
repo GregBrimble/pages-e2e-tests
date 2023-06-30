@@ -16,6 +16,17 @@ export const uploadTestResults = async ({
 	logger: Logger;
 	gitCommitMessage: string;
 }) => {
+	if (
+		TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_ACCOUNT_ID === undefined ||
+		TEST_RESULTS_PAGES_PROJECT.PROJECT_NAME === undefined ||
+		TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_API_TOKEN === undefined
+	) {
+		logger.log(
+			"No credentials provided for uploading the test results. Skipping..."
+		);
+		return;
+	}
+
 	logger.log("Uploading test results...");
 	// fs.cp doesn't like you copying into yourself, but the proper cp command is cool with it.
 	// We have to do this because @vitest/ui tries to serve from a base of `/__vitest__`.

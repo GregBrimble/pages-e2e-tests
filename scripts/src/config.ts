@@ -14,10 +14,10 @@ export const GIT_USERNAME = "Pages e2e Tests Bot";
 export const GIT_EMAIL_ADDRESS = "cloudflare-pages-team@cloudflare.com";
 
 export interface PagesProjectCredentials {
-	CLOUDFLARE_ACCOUNT_ID: string;
-	CLOUDFLARE_API_TOKEN: string;
-	PROJECT_NAME: string;
-	GIT_REPO?: string;
+	CLOUDFLARE_ACCOUNT_ID: string | undefined;
+	CLOUDFLARE_API_TOKEN: string | undefined;
+	PROJECT_NAME: string | undefined;
+	GIT_REPO?: string | undefined;
 }
 
 export const TEST_RESULTS_PAGES_PROJECT: PagesProjectCredentials = {
