@@ -17,6 +17,8 @@ const TRIGGER = Trigger.GitHub;
 
 let teardownService: TeardownService | undefined = undefined;
 
+let success = true;
+
 const main = async () => {
 	const startTimestamp = Date.now();
 
@@ -137,14 +139,10 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 		)
 	);
 
-	const success = await runTests({
+	success = await runTests({
 		logger,
 		fixtures: deployedFixtures,
 	});
-
-	if (!success) {
-		process.exitCode = 1;
-	}
 
 	await uploadTestResults({
 		logger,
@@ -152,9 +150,10 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 	});
 };
 
-main()
-	.catch((error) => {
-		process.exitCode = 1;
-		throw error;
-	})
-	.finally(() => teardownService?.teardown());
+main().finally(() => {
+	teardownService?.teardown().then(() => {
+		if (!success) {
+			process.exitCode = 1;
+		}
+	});
+});
