@@ -137,10 +137,14 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 		)
 	);
 
-	await runTests({
+	const success = await runTests({
 		logger,
 		fixtures: deployedFixtures,
 	});
+
+	if (!success) {
+		process.exitCode = 1;
+	}
 
 	await uploadTestResults({
 		logger,
@@ -148,4 +152,9 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 	});
 };
 
-main().finally(() => teardownService?.teardown());
+main()
+	.catch((error) => {
+		process.exitCode = 1;
+		throw error;
+	})
+	.finally(() => teardownService?.teardown());

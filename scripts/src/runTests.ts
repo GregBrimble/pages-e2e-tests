@@ -30,6 +30,7 @@ export const runTests = async ({
 		platform: "node",
 		format: "esm",
 		external: ["vitest"],
+		outExtension: { ".js": ".ts" },
 		sourcemap: true,
 	};
 	await rm(TESTS_PATH, { force: true, recursive: true });
@@ -47,7 +48,7 @@ export const runTests = async ({
 					build({
 						...testBuildOptions,
 						entryPoints,
-						outdir: join(TESTS_PATH, fixture, "features"),
+						outdir: join(TESTS_PATH, fixture, " ", "features"),
 						outbase: join(FEATURES_PATH),
 						define: {
 							DEPLOYMENT_URL: JSON.stringify(url),
@@ -61,7 +62,7 @@ export const runTests = async ({
 					build({
 						...testBuildOptions,
 						entryPoints,
-						outdir: join(TESTS_PATH, fixture, "__tests__"),
+						outdir: join(TESTS_PATH, fixture, " ", "__tests__"),
 						outbase: join(GLOBAL_TESTS_PATH),
 						define: {
 							DEPLOYMENT_URL: JSON.stringify(url),
@@ -75,7 +76,7 @@ export const runTests = async ({
 					build({
 						...testBuildOptions,
 						entryPoints,
-						outdir: join(TESTS_PATH, fixture),
+						outdir: join(TESTS_PATH, fixture, " "),
 						outbase: join(FIXTURES_PATH, fixture),
 						define: {
 							DEPLOYMENT_URL: JSON.stringify(url),
@@ -103,6 +104,9 @@ export const runTests = async ({
 		environment: "cfpreview-playwright",
 	});
 	await vitest.close();
+	const errors = vitest.state.errorsSet.size > 0;
 	process.chdir(oldCwd);
 	logger.info("Done.");
+
+	return !errors;
 };
