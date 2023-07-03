@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 import { defaultExclude, defaultInclude } from "vitest/config";
 import { ONE_MINUTE, ONE_SECOND } from "./utils";
 
-export const CWD = join(process.cwd(), "pages-e2e");
+export const CWD = join(process.cwd());
 export const DIRNAME = fileURLToPath(new URL("../../", import.meta.url));
 
 dotenv.config({ path: join(CWD, ".env") });

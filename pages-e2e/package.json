@@ -1,0 +1,7 @@
+{
+	"name": "@cloudflare/pages-e2e",
+	"private": true,
+	"scripts": {
+		"test": "../bin/run-test.js"
+	}
+}
