@@ -1,6 +1,6 @@
 {
 	"name": "@cfpreview/pages-e2e-test-runner-cli",
-	"version": "0.0.19",
+	"version": "0.0.20",
 	"bin": "./bin/run-test.js",
 	"files": [
 		"./asssets",
@@ -30,7 +30,7 @@
 	},
 	"dependencies": {
 		"dotenv": "^16.3.1",
-		"globby": "^13.2.0",
+		"globby": "^13.2.1",
 		"shellac": "^0.8.0",
 		"strip-json-comments": "^5.0.0",
 		"vitest-github-actions-reporter": "^0.10.0",
@@ -40,7 +40,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20230518.0",
-		"@types/node": "^20.3.2",
+		"@types/node": "^20.3.3",
 		"concurrently": "^8.2.0",
 		"husky": "^8.0.3",
 		"lint-staged": "^13.2.3",
@@ -51,14 +51,14 @@
 		"zod-to-json-schema": "^3.21.3"
 	},
 	"peerDependencies": {
-		"@vitest/ui": "^0.29.2",
-		"esbuild": "^0.15.3",
+		"@vitest/ui": "^0.32.4",
+		"esbuild": "^0.18.11",
 		"tsm": "^2.3.0",
-		"vitest": "^0.29.2",
+		"vitest": "^0.32.4",
 		"vitest-environment-cfpreview-playwright": "*"
 	},
 	"volta": {
-		"node": "16.20.1"
+		"node": "18.16.1"
 	},
 	"lint-staged": {
 		"*": "npm run prettier -- --write"
