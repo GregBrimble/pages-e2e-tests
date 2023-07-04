@@ -1,4 +1,5 @@
 import assert, { ok } from "assert";
+import { fetch } from "cross-fetch";
 import { join } from "path";
 import shellac from "shellac";
 import {

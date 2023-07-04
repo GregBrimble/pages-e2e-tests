@@ -1,3 +1,4 @@
+import { fetch } from "cross-fetch";
 import {
 	MUTEX_CHECK_INTERVAL,
 	MUTEX_CONSIDERED_STALE_TIMEOUT,
