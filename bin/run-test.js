@@ -23,4 +23,6 @@ spawn(
 			NODE_EXTRA_CA_CERTS: extraCACerts,
 		},
 	}
-);
+).on("exit", function (code) {
+	process.exitCode = code;
+});

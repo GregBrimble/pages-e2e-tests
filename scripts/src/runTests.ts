@@ -31,6 +31,7 @@ export const runTests = async ({
 		platform: "node",
 		format: "esm",
 		external: ["vitest"],
+		inject: ["cross-fetch/polyfill"],
 		outExtension: { ".js": ".ts" },
 		sourcemap: true,
 	};
