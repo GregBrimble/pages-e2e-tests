@@ -17,9 +17,9 @@ export const uploadTestResults = async ({
 	gitCommitMessage: string;
 }) => {
 	if (
-		TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_ACCOUNT_ID === undefined ||
-		TEST_RESULTS_PAGES_PROJECT.PROJECT_NAME === undefined ||
-		TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_API_TOKEN === undefined
+		!TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_ACCOUNT_ID ||
+		!TEST_RESULTS_PAGES_PROJECT.PROJECT_NAME ||
+		!TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_API_TOKEN
 	) {
 		logger.log(
 			"No credentials provided for uploading the test results. Skipping..."
@@ -34,6 +34,8 @@ export const uploadTestResults = async ({
 		$ rsync -Rr ${TEST_RESULTS_PATH} ${join(TEST_RESULTS_PATH, "__vitest__")}
 		stdout >> ${logger.info}
 	`;
+	process.env.CLOUDFLARE_API_TOKEN =
+		TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_API_TOKEN;
 	const testResultsDeployment = await unstable_pages.deploy({
 		directory: TEST_RESULTS_PATH,
 		accountId: TEST_RESULTS_PAGES_PROJECT.CLOUDFLARE_ACCOUNT_ID,
