@@ -11,20 +11,24 @@ export class Logger {
 	level: LogLevel;
 	private messages: [LogLevel, ...any][] = [];
 	collect: boolean;
+	timestamp: boolean;
 	children: Logger[] = [];
 
 	constructor({
 		level,
 		label,
 		collect = false,
+		timestamp = false,
 	}: {
 		level: LogLevel;
 		label?: string;
 		collect?: boolean;
+		timestamp?: boolean;
 	}) {
 		this.level = level;
 		this.label = label;
 		this.collect = collect;
+		this.timestamp = timestamp;
 	}
 
 	static from({
@@ -32,11 +36,13 @@ export class Logger {
 		level,
 		label,
 		collect,
+		timestamp,
 	}: {
 		logger: Logger;
 		level?: LogLevel;
 		label?: string;
 		collect?: boolean;
+		timestamp?: boolean;
 	}) {
 		const newLogger = new Logger({
 			level: level ?? logger.level,
@@ -45,6 +51,7 @@ export class Logger {
 					? `${label} ${logger.label}`
 					: label ?? logger.label,
 			collect: collect ?? logger.collect,
+			timestamp: timestamp ?? logger.timestamp,
 		});
 		logger.children.push(newLogger);
 		return newLogger;
@@ -65,6 +72,7 @@ export class Logger {
 				this.messages.push([level, ...args]);
 			} else {
 				console[LogLevel[level]](
+					...[this.timestamp ? [new Date().toISOString()] : []].flat(1),
 					...[this.label ? [this.label, ...args] : [...args]].flat(1)
 				);
 			}

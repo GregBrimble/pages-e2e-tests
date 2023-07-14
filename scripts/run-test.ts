@@ -24,6 +24,7 @@ const main = async () => {
 
 	const {
 		logLevel,
+		logTimestamp,
 		fixturesInclude,
 		fixturesExclude,
 		environment,
@@ -41,6 +42,13 @@ const main = async () => {
 						z.literal("error").transform(() => LogLevel.error),
 					])
 					.default("log"),
+				logTimestamp: z
+					.union([
+						z.literal("true").transform(() => true),
+						z.literal("false").transform(() => false),
+						z.null().transform(() => true),
+					])
+					.default("false"),
 				fixturesInclude: z
 					.array(
 						z
@@ -79,7 +87,7 @@ const main = async () => {
 			.strict(),
 	}).parse(process.argv.slice(2));
 
-	const logger = new Logger({ level: logLevel });
+	const logger = new Logger({ level: logLevel, timestamp: logTimestamp });
 	teardownService = new TeardownService({ logger });
 
 	const fixtures = (await readdir(FIXTURES_PATH, { withFileTypes: true }))
