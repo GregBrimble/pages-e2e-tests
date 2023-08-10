@@ -53,7 +53,7 @@ const main = async () => {
 					.array(
 						z
 							.string()
-							.refine((value) => value.match(/^(?:\w+(?:-\w+)*|\*)$/))
+							.refine((value) => value.match(/^(?:\w+(?:[-.]\w+)*|\*)$/))
 							.refine(
 								(value) =>
 									value === "*" || existsSync(join(FIXTURES_PATH, value))
@@ -64,7 +64,7 @@ const main = async () => {
 					.array(
 						z
 							.string()
-							.refine((value) => value.match(/^(?:\w+(?:-\w+)*|\*)$/))
+							.refine((value) => value.match(/^(?:[.\w]+(?:-[.\w]+)*|\*)$/))
 							.refine((value) => existsSync(join(FIXTURES_PATH, value)))
 					)
 					.default([]),
