@@ -30,6 +30,7 @@ const main = async () => {
 		environment,
 		trigger,
 		wranglerVersion,
+		skipWranglerInstall,
 	} = argumentParser({
 		options: z
 			.object({
@@ -83,6 +84,13 @@ const main = async () => {
 					])
 					.default("GitHub"),
 				wranglerVersion: z.string().default("beta"),
+				skipWranglerInstall: z
+					.union([
+						z.literal("true").transform(() => true),
+						z.literal("false").transform(() => false),
+						z.null().transform(() => true),
+					])
+					.default("false"),
 			})
 			.strict(),
 	}).parse(process.argv.slice(2));
@@ -109,11 +117,13 @@ We're starting at ${startTimestamp}, and we're going to run the following fixtur
 This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger.`
 	);
 
-	await installWranglerVersion({
-		logger,
-		teardownService,
-		version: wranglerVersion,
-	});
+	if (!skipWranglerInstall) {
+		await installWranglerVersion({
+			logger,
+			teardownService,
+			version: wranglerVersion,
+		});
+	}
 
 	const deployedFixtures = Object.fromEntries(
 		await Promise.all(
