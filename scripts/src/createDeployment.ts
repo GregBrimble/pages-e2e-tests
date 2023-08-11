@@ -242,13 +242,16 @@ export const createDeployment = async ({
 		return { url };
 	} else {
 		const host = HOSTS[environment];
-		ok(host);
+		ok(host, "The cloudflare host couldn't be determined");
 		const pagesProject = PAGES_PROJECTS[environment][trigger];
-		ok(pagesProject);
+		ok(pagesProject, "The pages project couldn't be determined");
 
 		let id: string;
 		if (trigger !== Trigger.DirectUpload) {
-			ok(pagesProject.GIT_REPO);
+			ok(
+				pagesProject.GIT_REPO,
+				"The pages project github repo couldn't be determined"
+			);
 
 			logger.log(`Configuring ${pagesProject.GIT_REPO} remote, and pushing...`);
 			await shellac.in(directory)`
@@ -270,6 +273,7 @@ export const createDeployment = async ({
 				},
 			});
 
+			console.log(`\x1b[31m Aaaaaaaaaaa \x1b[0m`);
 			logger.log("Creating Deploy Hook...");
 			let deployHookCreationResponse: Response;
 			let deployHookCreationResponseText: string;
@@ -322,7 +326,7 @@ export const createDeployment = async ({
 							},
 						}
 					);
-					ok(deployHookDeletionResponse.ok);
+					ok(deployHookDeletionResponse.ok, "Deploy hook deletion failed");
 					logger.info("Done.");
 				},
 			});
@@ -359,7 +363,7 @@ export const createDeployment = async ({
 					deployHookResponseText
 				) as DeployHookResponse;
 
-				ok(result.id);
+				ok(result.id, "Missing id in deploy hook response");
 				id = result.id;
 			} catch {
 				throw await transformResponseIntoError(
@@ -416,8 +420,8 @@ export const createDeployment = async ({
 						result: { url, latest_stage: latestStage },
 					} = JSON.parse(deploymentResponseText) as DeploymentResponse;
 
-					ok(url);
-					ok(latestStage.status);
+					ok(url, "Invalid deployment url");
+					ok(latestStage.status, "Invalid deployment response status");
 
 					if (
 						latestStage.name === "deploy" &&
@@ -492,7 +496,10 @@ export const createDeployment = async ({
 		fixtureConfig: FixtureConfig;
 		featuresConfig: FeaturesConfig;
 	}) {
-		ok([Environment.Production, Environment.Staging].includes(environment));
+		ok(
+			[Environment.Production, Environment.Staging].includes(environment),
+			"Wrong environment specified"
+		);
 
 		logger.log("Configuring project...");
 		logger.info("Getting initial project state...");
