@@ -29,8 +29,7 @@ const main = async () => {
 		fixturesExclude,
 		environment,
 		trigger,
-		wranglerVersion,
-		skipWranglerInstall,
+		installWrangler,
 	} = argumentParser({
 		options: z
 			.object({
@@ -83,14 +82,7 @@ const main = async () => {
 						z.literal("DirectUpload").transform(() => Trigger.DirectUpload),
 					])
 					.default("GitHub"),
-				wranglerVersion: z.string().default("beta"),
-				skipWranglerInstall: z
-					.union([
-						z.literal("true").transform(() => true),
-						z.literal("false").transform(() => false),
-						z.null().transform(() => true),
-					])
-					.default("false"),
+				installWrangler: z.union([z.null(), z.string()]).default(null),
 			})
 			.strict(),
 	}).parse(process.argv.slice(2));
@@ -117,11 +109,11 @@ We're starting at ${startTimestamp}, and we're going to run the following fixtur
 This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger.`
 	);
 
-	if (!skipWranglerInstall) {
+	if (installWrangler) {
 		await installWranglerVersion({
 			logger,
 			teardownService,
-			version: wranglerVersion,
+			version: installWrangler,
 		});
 	}
 
