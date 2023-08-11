@@ -169,16 +169,6 @@ export const createDeployment = async ({
 			directory,
 			fixtureConfig.buildConfig.rootDirectory
 		);
-		if (fixtureConfig.localSetup) {
-			logger.info(
-				`Running local setup command: \`${fixtureConfig.localSetup}\`...`
-			);
-			await shellac.in(rootDirectory)`
-				$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
-				$ ${fixtureConfig.localSetup}
-				stdout >> ${logger.info}
-			`;
-		}
 		if (fixtureConfig.buildConfig.buildCommand) {
 			logger.info(
 				`Running build command: \`${fixtureConfig.buildConfig.buildCommand}\`...`

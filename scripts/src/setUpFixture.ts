@@ -56,5 +56,16 @@ export const setUpFixture = async ({
 	}
 	logger.info("Done.");
 
+	const rootDirectory = join(directory, config.buildConfig.rootDirectory);
+
+	if (config.localSetup) {
+		logger.log(`Running local setup command: \`${config.localSetup}\`...`);
+		await shellac.in(rootDirectory)`
+			$ export NODE_EXTRA_CA_CERTS=${process.env.NODE_EXTRA_CA_CERTS}
+			$ ${config.localSetup}
+			stdout >> ${logger.info}
+		`;
+	}
+
 	return { config, directory };
 };
