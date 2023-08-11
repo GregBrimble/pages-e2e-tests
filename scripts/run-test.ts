@@ -125,6 +125,7 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 					label: `[${fixture}]`,
 				});
 				const { directory, config: fixtureConfig } = await setUpFixture({
+					timestamp: startTimestamp,
 					logger: fixtureLogger,
 					fixture,
 				});
