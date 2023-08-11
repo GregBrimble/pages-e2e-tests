@@ -138,6 +138,7 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 				});
 				const { config: featuresConfig } = await setUpFeatures({
 					logger: fixtureLogger,
+					fixture,
 					features: fixtureConfig.features,
 					directory,
 				});
