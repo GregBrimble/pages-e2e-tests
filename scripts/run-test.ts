@@ -82,7 +82,9 @@ const main = async () => {
 						z.literal("DirectUpload").transform(() => Trigger.DirectUpload),
 					])
 					.default("GitHub"),
-				installWrangler: z.union([z.null().transform(() => "beta"), z.string(), z.undefined()]),
+				installWrangler: z
+					.union([z.null().transform(() => "beta"), z.string()])
+					.optional(),
 			})
 			.strict(),
 	}).parse(process.argv.slice(2));
