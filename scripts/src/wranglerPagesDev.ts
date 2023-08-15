@@ -43,12 +43,27 @@ export const wranglerPagesDev = async ({
 		},
 	});
 
-	wranglerProcess.stdout?.on("data", (chunk) => {
-		logger.debug(chunk.toString());
+	wranglerProcess.stdout.on("readable", () => {
+		let chunk: any;
+		while (null !== (chunk = wranglerProcess.stdout.read())) {
+			logger.debug(chunk.toString());
+		}
 	});
 
-	wranglerProcess.stderr?.on("data", (chunk) => {
-		logger.debug(chunk.toString());
+	wranglerProcess.stderr.on("readable", () => {
+		let chunk: any;
+		while (null !== (chunk = wranglerProcess.stderr.read())) {
+			const chunkStr = chunk.toString();
+
+			logger.debug(chunkStr);
+
+			if (chunkStr.includes("The Workers runtime failed to start")) {
+				logger.error(
+					"Error: Wrangler failed to start the dev server, aborting!"
+				);
+				wranglerProcess.kill();
+			}
+		}
 	});
 
 	return promise;
