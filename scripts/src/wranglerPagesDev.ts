@@ -53,15 +53,15 @@ export const wranglerPagesDev = async ({
 	wranglerProcess.stderr.on("readable", () => {
 		let chunk: any;
 		while (null !== (chunk = wranglerProcess.stderr.read())) {
-			const chunkStr: string = chunk.toString();
+			const chunkStr = chunk.toString();
 
 			logger.debug(chunkStr);
 
-			if (chunk.toString().includes("The Workers runtime failed to start")) {
+			if (chunkStr.includes("The Workers runtime failed to start")) {
 				logger.error(
 					"Error: Wrangler failed to start the dev server, aborting!"
 				);
-				wranglerProcess.kill("SIGTERM");
+				wranglerProcess.kill();
 			}
 		}
 	});
