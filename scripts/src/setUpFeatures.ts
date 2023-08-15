@@ -1,3 +1,4 @@
+import { existsSync } from "fs";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import shellac from "shellac";
@@ -14,10 +15,12 @@ export type FeaturesConfig = Pick<Required<FeatureConfig>, "deploymentConfig">;
 
 export const setUpFeatures = async ({
 	logger,
+	fixture,
 	features,
 	directory,
 }: {
 	logger: Logger;
+	fixture: string;
 	features: Feature[];
 	directory: string;
 }) => {
@@ -42,6 +45,15 @@ export const setUpFeatures = async ({
 
 		for (const { name, path } of features) {
 			logger.log("Reading fixture config...");
+
+			const featureMain = join(path, "main.feature");
+
+			if (!existsSync(featureMain)) {
+				throw new Error(
+					`Could not find feature file for feature '${name}' (defined in fixture '${fixture}')`
+				);
+			}
+
 			const config = featuresSchema.parse(
 				JSON.parse(
 					stripJsonComments(await readFile(join(path, "main.feature"), "utf-8"))

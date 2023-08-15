@@ -29,7 +29,7 @@ const main = async () => {
 		fixturesExclude,
 		environment,
 		trigger,
-		wranglerVersion,
+		installWrangler,
 	} = argumentParser({
 		options: z
 			.object({
@@ -53,7 +53,7 @@ const main = async () => {
 					.array(
 						z
 							.string()
-							.refine((value) => value.match(/^(?:\w+(?:-\w+)*|\*)$/))
+							.refine((value) => value.match(/^(?:\w+(?:[-.]\w+)*|\*)$/))
 							.refine(
 								(value) =>
 									value === "*" || existsSync(join(FIXTURES_PATH, value))
@@ -64,7 +64,7 @@ const main = async () => {
 					.array(
 						z
 							.string()
-							.refine((value) => value.match(/^(?:\w+(?:-\w+)*|\*)$/))
+							.refine((value) => value.match(/^(?:\w+(?:[-.]\w+)*|\*)$/))
 							.refine((value) => existsSync(join(FIXTURES_PATH, value)))
 					)
 					.default([]),
@@ -82,7 +82,9 @@ const main = async () => {
 						z.literal("DirectUpload").transform(() => Trigger.DirectUpload),
 					])
 					.default("GitHub"),
-				wranglerVersion: z.string().default("beta"),
+				installWrangler: z
+					.union([z.null().transform(() => "beta"), z.string()])
+					.optional(),
 			})
 			.strict(),
 	}).parse(process.argv.slice(2));
@@ -109,11 +111,13 @@ We're starting at ${startTimestamp}, and we're going to run the following fixtur
 This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger.`
 	);
 
-	await installWranglerVersion({
-		logger,
-		teardownService,
-		version: wranglerVersion,
-	});
+	if (installWrangler) {
+		await installWranglerVersion({
+			logger,
+			teardownService,
+			version: installWrangler,
+		});
+	}
 
 	const deployedFixtures = Object.fromEntries(
 		await Promise.all(
@@ -123,11 +127,13 @@ This is going to be evaluated on ${environment}, using ${TRIGGER} as the trigger
 					label: `[${fixture}]`,
 				});
 				const { directory, config: fixtureConfig } = await setUpFixture({
+					timestamp: startTimestamp,
 					logger: fixtureLogger,
 					fixture,
 				});
 				const { config: featuresConfig } = await setUpFeatures({
 					logger: fixtureLogger,
+					fixture,
 					features: fixtureConfig.features,
 					directory,
 				});

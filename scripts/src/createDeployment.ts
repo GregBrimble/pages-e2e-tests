@@ -114,7 +114,7 @@ export const createDeployment = async ({
 	const gitCommitMessage = `${fixture} @ ${timestamp}`;
 
 	logger.log(
-		`Creating Git repo in ${directory}, hecking out orphan branch ${gitBranchName}, adding files, committing, and cleaning...`
+		`Creating Git repo in ${directory}, checking out orphan branch ${gitBranchName}, adding files, committing, and cleaning...`
 	);
 	await shellac.in(directory)`
 		$ git init .

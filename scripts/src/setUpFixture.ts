@@ -10,11 +10,13 @@ import { fixturesSchema } from "./schemas";
 export const setUpFixture = async ({
 	logger,
 	fixture,
+	timestamp,
 }: {
+	timestamp: number;
 	logger: Logger;
 	fixture: string;
 }) => {
-	const directory = join(WORKSPACES_PATH, Math.random().toString(36).slice(2));
+	const directory = join(WORKSPACES_PATH, `${fixture}-${timestamp}`);
 	const fixtureDirectory = join(FIXTURES_PATH, fixture);
 
 	logger.info(`Making workspace directory ${directory}...`);
