@@ -242,15 +242,15 @@ export const createDeployment = async ({
 		return { url };
 	} else {
 		const host = HOSTS[environment];
-		ok(host, "The cloudflare host couldn't be determined");
+		ok(host, "The Cloudflare host couldn't be determined");
 		const pagesProject = PAGES_PROJECTS[environment][trigger];
-		ok(pagesProject, "The pages project couldn't be determined");
+		ok(pagesProject, "The Pages project couldn't be determined");
 
 		let id: string;
 		if (trigger !== Trigger.DirectUpload) {
 			ok(
 				pagesProject.GIT_REPO,
-				"The pages project github repo couldn't be determined"
+				"The Pages project's Git repo couldn't be determined"
 			);
 
 			logger.log(`Configuring ${pagesProject.GIT_REPO} remote, and pushing...`);
@@ -273,7 +273,6 @@ export const createDeployment = async ({
 				},
 			});
 
-			console.log(`\x1b[31m Aaaaaaaaaaa \x1b[0m`);
 			logger.log("Creating Deploy Hook...");
 			let deployHookCreationResponse: Response;
 			let deployHookCreationResponseText: string;
@@ -326,7 +325,7 @@ export const createDeployment = async ({
 							},
 						}
 					);
-					ok(deployHookDeletionResponse.ok, "Deploy hook deletion failed");
+					ok(deployHookDeletionResponse.ok, "Deploy Hook deletion failed");
 					logger.info("Done.");
 				},
 			});
@@ -363,7 +362,7 @@ export const createDeployment = async ({
 					deployHookResponseText
 				) as DeployHookResponse;
 
-				ok(result.id, "Missing id in deploy hook response");
+				ok(result.id, "Missing id in Deploy Hook response");
 				id = result.id;
 			} catch {
 				throw await transformResponseIntoError(
@@ -498,7 +497,7 @@ export const createDeployment = async ({
 	}) {
 		ok(
 			[Environment.Production, Environment.Staging].includes(environment),
-			"Wrong environment specified"
+			"Invalid environment specified"
 		);
 
 		logger.log("Configuring project...");
