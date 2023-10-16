@@ -1,0 +1,10 @@
+{
+	"buildConfig": {
+		"buildOutputDirectory": "public"
+	},
+	"deploymentConfig": {
+		"environmentVariables": {
+			"FOO": "BAR"
+		}
+	}
+}
