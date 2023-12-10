@@ -1,5 +1,5 @@
 import { existsSync } from "fs";
-import { readFile } from "fs/promises";
+import { readFile, readdir } from "fs/promises";
 import { join } from "path";
 import shellac from "shellac";
 import stripJsonComments from "strip-json-comments";
@@ -35,6 +35,19 @@ export const setUpFeatures = async ({
 			queueProducers: {},
 		},
 	};
+
+	try {
+		const fixtureFeaturesDir = join(directory, "features");
+
+		const fixtureSpecificFeatures: Feature[] = (
+			await readdir(fixtureFeaturesDir)
+		).map((feature) => ({
+			name: feature,
+			path: join(fixtureFeaturesDir, feature),
+		}));
+
+		fixtureSpecificFeatures.forEach((feature) => features.push(feature));
+	} catch {}
 
 	if (features.length > 0) {
 		logger.log(
