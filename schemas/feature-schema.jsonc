@@ -361,9 +361,6 @@
       "description": "The additional deployment configuration to use when deploying this feature."
     }
   },
-  "required": [
-    "setup"
-  ],
   "additionalProperties": false,
   "$schema": "http://json-schema.org/draft-07/schema#"
 }

@@ -238,10 +238,14 @@ export const fixturesSchema = z
 export type FixtureConfig = z.TypeOf<typeof fixturesSchema>;
 
 export const featuresSchema = z.object({
-	setup: z
-		.string()
-		.nonempty()
-		.describe("The command to run to apply this feature to a fixture project."),
+	setup: z.optional(
+		z
+			.string()
+			.nonempty()
+			.describe(
+				"The command to run to apply this feature to a fixture project."
+			)
+	),
 	deploymentConfig: z
 		.object({
 			...combinableDeploymentConfigObjects,
